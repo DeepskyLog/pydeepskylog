@@ -30,7 +30,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: 3.7",
@@ -43,6 +43,7 @@ setup(
         "Intended Audience :: Education",
         "Intended Audience :: Science/Research",
         "Topic :: Software Development",
+        "Topic :: Scientific/Engineering :: Astronomy",
         "Topic :: Software Development :: Libraries",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
