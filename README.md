@@ -7,13 +7,17 @@
 - [Astronomical background](#astronomical-background)
   - [Contrast Reserve](#contrast-reserve)
   - [Optimal Detection Magnification](#optimal-detection-magnification)
+  - [Magnitudes](#magnitudes)
 - [Contributing](#contributing)
 - [License](#license)
 - [Acknowledgements](#acknowledgements)
 
 ## Description
 
-A Python package with utilities for calculating contrast reserve and optimal detection magnification for deep sky objects.  
+A Python package with utilities for deep-sky observations. 
+This version of pydeepskylog provides the following functionality: 
++ Calculating of contrast reserve and optimal detection magnification for deep-sky objects.
++ Conversion of magnitudes to SQM value and bortle scale and vice versa.
 
 In the future, it will also include utilities for fetching and adding observation logs from/to the DeepSkyLog website.
 
@@ -38,6 +42,24 @@ possible_magnifications = [50, 100, 150, 200, 250]
 # Calculate optimal detection magnification
 optimal_detection_magnification = pds.optimal_detection_magnification(sqm=22, telescope_diameter=457, magnitude=11, object_diameter1=600, object_diameter2=600, magnifications=possible_magnifications)
 print(optimal_detection_magnification)
+
+# Convert naked eye limiting magnitude to SQM value
+sqm = pds.nelm_to_sqm(5.8)
+
+# Convert SQM value to naked eye limiting magnitude
+nelm = pds.sqm_to_nelm(21.4)
+
+# Convert Bortle scale to SQM value
+print(pds.bortle_to_sqm(4))
+
+# Convert SQM value to Bortle scale
+print(pds.sqm_to_bortle(21.4))
+
+# Convert naked eye limiting magnitude to bortle scale
+print(pds.nelm_to_bortle(5.8))
+
+# Convert bortle scale to naked eye limiting magnitude
+print(pds.bortle_to_nelm(4))
 ```
 
 ## Astronomical background
@@ -69,6 +91,12 @@ Only if the observer tries to observe the object, he/she will know if the object
 
 The optimal detection magnification is the magnification at which the object is most easily visible. 
 Take into account that the optimal detection magnification is not the same as the best magnification for observing details in an object, but for the object as a whole.
+
+### Magnitudes
+
+Conversion methods are provided to convert magnitudes to SQM value and bortle scale and vice versa.
+
+Different formulae are available to convert magnitudes to SQM value.  The formula used here converts a sqm value of 22.0 to a naked eye limiting magnitude of 6.6.  The faintest star offset can be given to the formula.  If taking a value of -1.4 for the faintest star offset, the formula converts a sqm value of 22.0 to a naked eye limiting magnitude of 8.0. 
 
 ## Contributing
 

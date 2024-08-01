@@ -3,7 +3,7 @@ import unittest
 import pydeepskylog.contrast_reserve as pds
 
 
-class TestSurfaceBrightness(unittest.TestCase):
+class TestContrastReserve(unittest.TestCase):
 
     def test_surface_brightness(self):
         sb = pds.surface_brightness(15, 8220, 8220)
