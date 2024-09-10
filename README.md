@@ -1,6 +1,7 @@
 # pydeepskylog
 
 ## Table of Contents
+
 - [Description](#description)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -14,8 +15,9 @@
 
 ## Description
 
-A Python package with utilities for deep-sky observations. 
-This version of pydeepskylog provides the following functionality: 
+A Python package with utilities for deep-sky observations.
+This version of pydeepskylog provides the following functionality:
+
 + Calculating of contrast reserve and optimal detection magnification for deep-sky objects.
 + Conversion of magnitudes to SQM value and bortle scale and vice versa.
 
@@ -32,7 +34,7 @@ pip install pydeepskylog
 ```python
 import pydeepskylog as pds
 
-# Calculate contrast reserve
+# Calculate contrast reserve. The object diameters are given in arc seconds.
 contrast_reserve = pds.contrast_reserve(sqm=22, telescope_diameter=457, magnification=118, magnitude=11, object_diameter1=600, object_diameter2=600)
 print(contrast_reserve)
 
@@ -70,8 +72,9 @@ The contrast reserve is a measure of the difference in brightness between the ob
 
 The higher the contrast reserve, the easier it is to see the object.  The following table can be used to interpret the contrast reserve:
 
+
 | Contrast Reserve | Visibility             | Typical color |
-|------------------|------------------------|---------------|
+| ---------------- | ---------------------- | ------------- |
 | < -0.2           | Not visible            | dark grey     |
 | -0.2 < CR < 0.1  | Questionable           | light grey    |
 | 0.1 < CR < 0.35  | Difficult              | dark red      |
@@ -81,22 +84,22 @@ The higher the contrast reserve, the easier it is to see the object.  The follow
 
 The contrast reserved is calculated for the object as a whole.  Smaller details in the object might be visible even if the contrast reserve of the object as a whole is below -0.2.  This is certainly the case for galaxies, where the core might be much brighter than the outer regions.
 
-It is important to note that the contrast reserve is a theoretical value and that the actual visibility of an object will depend on a number of other factors, including the observer's experience, the transparency of the sky, and the seeing conditions.  The contrast reserve is just a guideline. 
+It is important to note that the contrast reserve is a theoretical value and that the actual visibility of an object will depend on a number of other factors, including the observer's experience, the transparency of the sky, and the seeing conditions.  The contrast reserve is just a guideline.
 
-The calculation of the contrast reserve depends heavily on the quality of the object database.  A small error in the object's magnitude or size can lead to a large error in the contrast reserve. 
+The calculation of the contrast reserve depends heavily on the quality of the object database.  A small error in the object's magnitude or size can lead to a large error in the contrast reserve.
 
-Only if the observer tries to observe the object, he/she will know if the object is visible or not.  
+Only if the observer tries to observe the object, he/she will know if the object is visible or not.
 
 ### Optimal Detection Magnification
 
-The optimal detection magnification is the magnification at which the object is most easily visible. 
+The optimal detection magnification is the magnification at which the object is most easily visible.
 Take into account that the optimal detection magnification is not the same as the best magnification for observing details in an object, but for the object as a whole.
 
 ### Magnitudes
 
 Conversion methods are provided to convert magnitudes to SQM value and bortle scale and vice versa.
 
-Different formulae are available to convert magnitudes to SQM value.  The formula used here converts a sqm value of 22.0 to a naked eye limiting magnitude of 6.6.  The faintest star offset can be given to the formula.  If taking a value of -1.4 for the faintest star offset, the formula converts a sqm value of 22.0 to a naked eye limiting magnitude of 8.0. 
+Different formulae are available to convert magnitudes to SQM value.  The formula used here converts a sqm value of 22.0 to a naked eye limiting magnitude of 6.6.  The faintest star offset can be given to the formula.  If taking a value of -1.4 for the faintest star offset, the formula converts a sqm value of 22.0 to a naked eye limiting magnitude of 8.0.
 
 ## Contributing
 
