@@ -1,6 +1,6 @@
 import unittest
 
-import pydeepskylog.magnitude as pds
+import pydeepskylog as pds
 
 
 class TestMagnitude(unittest.TestCase):

@@ -1,6 +1,6 @@
 import unittest
 
-import pydeepskylog.contrast_reserve as pds
+import pydeepskylog as pds
 
 
 class TestContrastReserve(unittest.TestCase):
