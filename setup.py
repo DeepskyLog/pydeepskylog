@@ -51,7 +51,7 @@ setup(
     author="Wim De Meester",
     author_email="deepskywim@gmail.com",
     install_requires=[
-        "",
+        "requests",
     ],
     extras_require={
         "dev": [

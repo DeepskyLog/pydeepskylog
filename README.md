@@ -35,14 +35,17 @@ pip install pydeepskylog
 import pydeepskylog as pds
 
 # Calculate contrast reserve. The object diameters are given in arc seconds.
-contrast_reserve = pds.contrast_reserve(sqm=22, telescope_diameter=457, magnification=118, magnitude=11, object_diameter1=600, object_diameter2=600)
+contrast_reserve = pds.contrast_reserve(sqm=22, telescope_diameter=457, magnification=118, magnitude=11,
+                                        object_diameter1=600, object_diameter2=600)
 print(contrast_reserve)
 
 # Define a list of possible magnifications
 possible_magnifications = [50, 100, 150, 200, 250]
 
 # Calculate optimal detection magnification
-optimal_detection_magnification = pds.optimal_detection_magnification(sqm=22, telescope_diameter=457, magnitude=11, object_diameter1=600, object_diameter2=600, magnifications=possible_magnifications)
+optimal_detection_magnification = pds.optimal_detection_magnification(sqm=22, telescope_diameter=457, magnitude=11,
+                                                                      object_diameter1=600, object_diameter2=600,
+                                                                      magnifications=possible_magnifications)
 print(optimal_detection_magnification)
 
 # Convert naked eye limiting magnitude to SQM value
@@ -62,6 +65,16 @@ print(pds.nelm_to_bortle(5.8))
 
 # Convert bortle scale to naked eye limiting magnitude
 print(pds.bortle_to_nelm(4))
+
+# Get all defined instruments of a DeepskyLog user
+print(pds.dsl_instruments('username'))
+
+# Get all defined eyepieces of a DeepskyLog user
+print(pds.dsl_eyepieces('username'))
+
+# Get a list of possible magnifications for a given telescope and the eyepieces as defined in DeepskyLog
+telescope = pds.dsl_instruments('username')[0]
+print (pds.calculate_magnifications(, telescope))
 ```
 
 ## Astronomical background
@@ -74,7 +87,7 @@ The higher the contrast reserve, the easier it is to see the object.  The follow
 
 
 | Contrast Reserve | Visibility             | Typical color |
-| ---------------- | ---------------------- | ------------- |
+|------------------|------------------------|---------------|
 | < -0.2           | Not visible            | dark grey     |
 | -0.2 < CR < 0.1  | Questionable           | light grey    |
 | 0.1 < CR < 0.35  | Difficult              | dark red      |
