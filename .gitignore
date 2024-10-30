@@ -2,3 +2,6 @@
 /.idea
 /pydeepskylog/__pycache__
 /pydeepskylog/tests/__pycache__
+/build/*
+*.egg-info
+*.egg

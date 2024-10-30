@@ -63,6 +63,48 @@ def calculate_magnifications(instrument: dict, eyepieces: dict) -> list:
 
     return magnifications
 
+def convert_instrument_type_to_int(instrument_type: str) -> int:
+    """
+    Convert an instrument type string to an integer.
+    :param instrument_type: The instrument type as a string.
+    :return: The instrument type as an integer.
+    """
+    instrument_types = {
+        "Naked Eye": 0,
+        "Binoculars": 1,
+        "Refractor": 2,
+        "Reflector": 3,
+        "Finderscope": 4,
+        "Other": 5,
+        "Cassegrain": 6,
+        "Kutter": 7,
+        "Maksutov": 8,
+        "Schmidt Cassegrain": 9,
+    }
+
+    return instrument_types[instrument_type]
+
+def convert_instrument_type_to_string(instrument_type: int) -> str:
+    """
+    Convert an instrument type string to a string.
+    :param instrument_type: The instrument type as an integer.
+    :return: The instrument type as a string.
+    """
+    instrument_types = {
+        0: "Naked Eye",
+        1: "Binoculars",
+        2: "Refractor",
+        3: "Reflector",
+        4: "Finderscope",
+        5: "Other",
+        6: "Cassegrain",
+        7: "Kutter",
+        8: "Maksutov",
+        9: "Schmidt Cassegrain",
+    }
+
+    return instrument_types[instrument_type]
+
 def _dsl_api_call(api_call: str, username: str) -> dict:
     """
     Make an API call to the DeepskyLog system.
