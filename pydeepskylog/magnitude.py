@@ -1,7 +1,7 @@
 import math
 
 
-def nelm_to_sqm(nelm: float, fst_offset=0.0) -> float:
+def nelm_to_sqm(nelm: float, fst_offset:float=0.0) -> float:
     """
     Calculate the SQM value from the NELM (Naked Eye Limiting Magnitude) value. In these calculations, the NELM value is
     maximum 6.7.
@@ -73,7 +73,7 @@ def sqm_to_bortle(sqm: float) -> int:
         return 1
 
 
-def sqm_to_nelm(sqm: float, fst_offset=0.0) -> float:
+def sqm_to_nelm(sqm: float, fst_offset: float=0.0) -> float:
     """
     Calculate the Naked Eye Limiting Magnitude from the SQM (Sky Quality Meter) value.
     :param sqm: The SQM value
@@ -89,7 +89,7 @@ def sqm_to_nelm(sqm: float, fst_offset=0.0) -> float:
     return nelm - fst_offset
 
 
-def bortle_to_nelm(bortle: int, fst_offset=0.0) -> float:
+def bortle_to_nelm(bortle: int, fst_offset: float=0.0) -> float:
     """
     Calculate the NELM value if the bortle scale is given.
 

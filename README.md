@@ -74,7 +74,8 @@ print(pds.dsl_eyepieces('username'))
 
 # Get a list of possible magnifications for a given telescope and the eyepieces as defined in DeepskyLog
 telescope = pds.dsl_instruments('username')[0]
-print (pds.calculate_magnifications(, telescope))
+eyepieces = pds.dsl_eyepieces('username')
+print (pds.calculate_magnifications(telescope, eyepieces))
 ```
 
 ## Astronomical background

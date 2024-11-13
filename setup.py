@@ -27,6 +27,7 @@ setup(
     version=get_version("pydeepskylog/version.py"),
     description="Astronomical observation logging software",
     packages=find_packages(),
+    package_data={"pydeepskylog": ["py.typed"]},
     long_description=long_description,
     long_description_content_type="text/markdown",
     classifiers=[
