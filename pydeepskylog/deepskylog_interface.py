@@ -12,7 +12,7 @@ def dsl_instruments(username: str) -> dict:
     Returns:
         dict: A dictionary containing the instruments' specifications, in JSON format.
     """
-    return _dsl_api_call("instruments", username)
+    return _dsl_api_call("instrument", username)
 
 def dsl_eyepieces(username: str) -> dict:
     """
