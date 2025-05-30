@@ -72,6 +72,9 @@ print(pds.dsl_instruments('username'))
 # Get all defined eyepieces of a DeepskyLog user
 print(pds.dsl_eyepieces('username'))
 
+# Get all defined lenses of a DeepskyLog user
+print(pds.dsl_lenses('username'))
+
 # Get a list of possible magnifications for a given telescope and the eyepieces as defined in DeepskyLog
 telescope = pds.dsl_instruments('username')[0]
 eyepieces = pds.dsl_eyepieces('username')

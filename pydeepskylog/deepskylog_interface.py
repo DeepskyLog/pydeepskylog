@@ -28,6 +28,21 @@ def dsl_eyepieces(username: str) -> dict:
     """
     return _dsl_api_call("eyepieces", username)
 
+def dsl_lenses(username: str) -> dict:
+    """
+    Get all defined lenses of a DeepskyLog user.
+
+    This function retrieves the lenses defined by a specific user in the DeepskyLog system.
+
+    Args:
+        username (str): The username of the DeepskyLog user.
+
+    Returns:
+        dict: A dictionary containing the lenses' specifications, in JSON format.
+    """
+    return _dsl_api_call("lenses", username)
+
+
 def calculate_magnifications(instrument: dict, eyepieces: dict) -> list:
     """
     Calculate possible magnifications for a given telescope and eyepieces.
@@ -114,7 +129,7 @@ def _dsl_api_call(api_call: str, username: str) -> dict:
 
     Args:
         api_call (str): The specific API endpoint to call (e.g., "instruments", "eyepieces").
-        username (str): The username of the DeepskyLog user.
+        username (str): The username of the DeepskyLog uphpser.
 
     Returns:
         dict: The response from the API call, parsed as a JSON dictionary.
