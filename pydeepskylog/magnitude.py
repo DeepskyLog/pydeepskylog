@@ -21,7 +21,14 @@ def nelm_to_sqm(nelm: float, fst_offset:float=0.0) -> float:
         raise ValueError("fst_offset must be a number")
     if nelm < 0 or nelm > 6.7:
         raise ValueError("NELM must be between 0 and 6.7")
-    sqm = 21.58 - 5 * math.log10(math.pow(10, 1.586 - (nelm + fst_offset) / 5.0) - 1.0)
+    try:
+        exponent = 1.586 - (nelm + fst_offset) / 5.0
+        base = math.pow(10, exponent) - 1.0
+        if base <= 0:
+            raise ValueError("Invalid calculation: log10 argument must be positive")
+        sqm = 21.58 - 5 * math.log10(base)
+    except (ValueError, OverflowError) as e:
+        raise ValueError(f"Error in SQM calculation: {e}")
     return min(sqm, 22.0)
 
 
@@ -111,11 +118,15 @@ def sqm_to_nelm(sqm: float, fst_offset: float=0.0) -> float:
         raise ValueError("fst_offset must be a number")
     if sqm < 0 or sqm > 22:
         raise ValueError("SQM must be between 0 and 22")
-    nelm = 7.93 - 5 * math.log10(1 + math.pow(10, 4.316 - sqm / 5.0))
-
+    try:
+        base = 1 + math.pow(10, 4.316 - sqm / 5.0)
+        if base <= 0:
+            raise ValueError("Invalid calculation: log10 argument must be positive")
+        nelm = 7.93 - 5 * math.log10(base)
+    except (ValueError, OverflowError) as e:
+        raise ValueError(f"Error in NELM calculation: {e}")
     if nelm < 2.5:
         nelm = 2.5
-
     return nelm - fst_offset
 
 
