@@ -102,10 +102,16 @@ class TestContrastReserve(unittest.TestCase):
         
         # Test cases with None parameters
         # These test cases should return None when certain parameters are None
-        self.assertIsNone(pds.contrast_reserve(sqm, diameter, 118, None, None, 600, 600))
-        self.assertIsNone(pds.contrast_reserve(sqm, diameter, 118, None, 11, None, 600))
-        self.assertIsNone(pds.contrast_reserve(sqm, diameter, 118, None, 11, 600, None))
-        
+        with self.assertRaises(ValueError) as context:
+            pds.contrast_reserve(sqm, diameter, 118, None, None, 600, 600)
+        self.assertEqual(str(context.exception), "Magnitude must be provided if surface brightness is not given")
+        with self.assertRaises(ValueError) as context:
+            self.assertIsNone(pds.contrast_reserve(sqm, diameter, 118, None, 11, None, 600))
+        self.assertEqual(str(context.exception), "Object diameters must be provided to calculate contrast reserve")
+        with self.assertRaises(ValueError) as context:
+            self.assertIsNone(pds.contrast_reserve(sqm, diameter, 118, None, 11, 600, None))
+        self.assertEqual(str(context.exception), "Object diameters must be provided to calculate contrast reserve")
+
         # Test with surface brightness provided directly
         # When providing surface brightness directly, the calculation is different
         # The expected value is calculated based on the formula: -0.4 * (surf_brightness + 8.89 - sqm)

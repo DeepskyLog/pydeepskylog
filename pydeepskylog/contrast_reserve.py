@@ -105,8 +105,8 @@ def calculate_initial_parameters(
     if object_diameter1 is None or object_diameter2 is None:
         # If the object diameters are not given, we cannot calculate the contrast reserve
         logger.error("Cannot calculate contrast reserve, missing object diameters")
-        return None, None, None, None
-        
+        raise ValueError("Object diameters must be provided to calculate contrast reserve")
+
     object_diameter1_in_arc_minutes = object_diameter1 / 60.0
     object_diameter2_in_arc_minutes = object_diameter2 / 60.0
     
@@ -143,7 +143,7 @@ def calculate_log_object_contrast(
         if magnitude is None:
             # If not, we cannot calculate the log object contrast
             logger.error("Cannot calculate log object contrast, missing parameters")
-            return None
+            raise ValueError("Magnitude must be provided if surface brightness is not given")
         log_object_contrast = -0.4 * (surface_brightness(magnitude, object_diameter1, object_diameter2) - sqm)
             
     return log_object_contrast
@@ -252,23 +252,19 @@ def contrast_reserve(
     )
     
     # Calculate initial parameters
-    aperture_in_inches, sbb1, object_diameter1_in_arc_minutes, object_diameter2_in_arc_minutes = calculate_initial_parameters(
-        sqm, telescope_diameter, object_diameter1, object_diameter2
-    )
-    
-    # If any of the initial parameters are None, we cannot proceed
-    if None in (aperture_in_inches, sbb1, object_diameter1_in_arc_minutes, object_diameter2_in_arc_minutes):
-        return None
-    
+    try:
+        aperture_in_inches, sbb1, object_diameter1_in_arc_minutes, object_diameter2_in_arc_minutes = calculate_initial_parameters(
+            sqm, telescope_diameter, object_diameter1, object_diameter2
+        )
+    except ValueError as e:
+        logger.error(str(e))
+        raise
+
     # Calculate log object contrast
     log_object_contrast = calculate_log_object_contrast(
         sqm, surf_brightness, magnitude, object_diameter1, object_diameter2
     )
-    
-    # If log_object_contrast is None, we cannot proceed
-    if log_object_contrast is None:
-        return None
-    
+
     # Calculate sky background brightness with magnification
     sbb = sbb1 + 5 * math.log10(magnification)
     
