@@ -98,25 +98,21 @@ def bortle_to_nelm(bortle: int, fst_offset: float=0.0) -> float:
 
     :return: The NELM value
     """
-
-    if bortle == 1:
-        return 6.6 - fst_offset
-    elif bortle == 2:
-        return 6.5 - fst_offset
-    elif bortle == 3:
-        return 6.4 - fst_offset
-    elif bortle == 4:
-        return 6.1 - fst_offset
-    elif bortle == 5:
-        return 5.4 - fst_offset
-    elif bortle == 6:
-        return 4.7 - fst_offset
-    elif bortle == 7:
-        return 4.2 - fst_offset
-    elif bortle == 8:
-        return 3.8 - fst_offset
-    elif bortle == 9:
-        return 3.6 - fst_offset
+    # Lookup dictionary mapping Bortle scale to NELM values
+    bortle_nelm_map = {
+        1: 6.6,
+        2: 6.5,
+        3: 6.4,
+        4: 6.1,
+        5: 5.4,
+        6: 4.7,
+        7: 4.2,
+        8: 3.8,
+        9: 3.6
+    }
+    
+    if bortle in bortle_nelm_map:
+        return bortle_nelm_map[bortle] - fst_offset
     else:
         return 0.0
 
@@ -128,23 +124,20 @@ def bortle_to_sqm(bortle: int) -> float:
     :param bortle: The bortle scale
     :return: The SQM value
     """
-    if bortle == 1:
-        return 21.85
-    elif bortle == 2:
-        return 21.6
-    elif bortle == 3:
-        return 21.4
-    elif bortle == 4:
-        return 20.85
-    elif bortle == 5:
-        return 19.75
-    elif bortle == 6:
-        return 18.8
-    elif bortle == 7:
-        return 18.25
-    elif bortle == 8:
-        return 17.75
-    elif bortle == 9:
-        return 17.5
+    # Lookup dictionary mapping Bortle scale to SQM values
+    bortle_sqm_map = {
+        1: 21.85,
+        2: 21.6,
+        3: 21.4,
+        4: 20.85,
+        5: 19.75,
+        6: 18.8,
+        7: 18.25,
+        8: 17.75,
+        9: 17.5
+    }
+    
+    if bortle in bortle_sqm_map:
+        return bortle_sqm_map[bortle]
     else:
         return 0.0

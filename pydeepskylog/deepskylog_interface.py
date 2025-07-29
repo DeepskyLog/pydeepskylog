@@ -143,7 +143,7 @@ def _dsl_api_call(api_call: str, username: str) -> dict:
 
     Args:
         api_call (str): The specific API endpoint to call (e.g., "instruments", "eyepieces").
-        username (str): The username of the DeepskyLog uphpser.
+        username (str): The username of the DeepskyLog user.
 
     Returns:
         dict: The response from the API call, parsed as a JSON dictionary.
