@@ -149,71 +149,90 @@ def calculate_log_object_contrast(
     return log_object_contrast
 
 
-def calculate_threshold_contrast(sbb: float, ang: float) -> float:
+def calculate_threshold_contrast(sky_background_brightness: float, angular_size_arcmin: float) -> float:
     """
     Calculates the threshold contrast using LTC array interpolation.
-    
-    :param sbb: The sky background brightness
-    :param ang: The angular size in arc minutes
+
+    :param sky_background_brightness: The sky background brightness
+    :param angular_size_arcmin: The angular size in arc minutes
     :return: The log threshold contrast
     """
-    max_log = 37
-    log_angle = math.log10(ang)
-    i = 0
-    
-    # Get integer of the surface brightness
-    int_sb = int(sbb)
-    
-    # surface brightness index A
-    sb_ia = int_sb - 4
-    
-    # min index must be at least 0
-    if sb_ia < 0:
-        sb_ia = 0
-    
-    # max sb_ia index cannot > 22 so that max sb_ib <= 23
-    if sb_ia > ContrastReserveConfig.LTC_SIZE - 2:
-        sb_ia = ContrastReserveConfig.LTC_SIZE - 2
-    
-    # surface brightness index B
-    sb_ib = sb_ia + 1
-    
-    while i < ContrastReserveConfig.ANGLE_SIZE and log_angle > ContrastReserveConfig.ANGLE[i]:
-        i = i + 1
-    
-    i += 1
-    
-    # found 1st Angle[] value > LogAng, so back up 2
-    i -= 2
-    
-    if i < 0:
-        i = 0
-        log_angle = ContrastReserveConfig.ANGLE[0]
-    
-    if i == ContrastReserveConfig.ANGLE_SIZE - 1:
-        i = ContrastReserveConfig.ANGLE_SIZE - 2
-    
-    # ie, if log_angle = 4 and angle[i] = 3 and Angle[i+1] = 5, interpolated_angle = .5, or .5 of the way between
-    # angle[i] and angle[i + 1]
-    interpolated_angle = (log_angle - ContrastReserveConfig.ANGLE[i]) / (ContrastReserveConfig.ANGLE[i + 1] - ContrastReserveConfig.ANGLE[i])
-    
-    # add 1 to i because first entry in LTC is sky background brightness
-    interpolated_a = ContrastReserveConfig.LTC[sb_ia][i + 1] + interpolated_angle * (ContrastReserveConfig.LTC[sb_ia][i + 2] - ContrastReserveConfig.LTC[sb_ia][i + 1])
-    interpolated_b = ContrastReserveConfig.LTC[sb_ib][i + 1] + interpolated_angle * (ContrastReserveConfig.LTC[sb_ib][i + 2] - ContrastReserveConfig.LTC[sb_ib][i + 1])
-    
-    if sbb < ContrastReserveConfig.LTC[0][0]:
-        sbb = ContrastReserveConfig.LTC[0][0]
-    
-    if int_sb >= ContrastReserveConfig.LTC[ContrastReserveConfig.LTC_SIZE - 1][0]:
-        log_threshold_contrast = interpolated_b + (sbb - ContrastReserveConfig.LTC[ContrastReserveConfig.LTC_SIZE - 1][0]) * (interpolated_b - interpolated_a)
+    max_log_contrast = 37
+    log_angular_size = math.log10(angular_size_arcmin)
+    angle_index = 0
+
+    # Get integer part of the sky background brightness
+    int_sky_brightness = int(sky_background_brightness)
+
+    # Calculate the index for the LTC table (row for sky brightness)
+    sky_brightness_index_a = int_sky_brightness - 4
+
+    # Ensure index is within bounds
+    if sky_brightness_index_a < 0:
+        sky_brightness_index_a = 0
+    if sky_brightness_index_a > ContrastReserveConfig.LTC_SIZE - 2:
+        sky_brightness_index_a = ContrastReserveConfig.LTC_SIZE - 2
+
+    sky_brightness_index_b = sky_brightness_index_a + 1
+
+    # Find the correct interval in ANGLE for interpolation
+    while angle_index < ContrastReserveConfig.ANGLE_SIZE and log_angular_size > ContrastReserveConfig.ANGLE[angle_index]:
+        angle_index += 1
+
+    angle_index += 1
+    angle_index -= 2
+
+    if angle_index < 0:
+        angle_index = 0
+        log_angular_size = ContrastReserveConfig.ANGLE[0]
+
+    if angle_index == ContrastReserveConfig.ANGLE_SIZE - 1:
+        angle_index = ContrastReserveConfig.ANGLE_SIZE - 2
+
+
+    # Interpolate between ANGLE grid points
+    angle_fraction = (
+        (log_angular_size - ContrastReserveConfig.ANGLE[angle_index]) /
+        (ContrastReserveConfig.ANGLE[angle_index + 1] - ContrastReserveConfig.ANGLE[angle_index])
+    )
+
+    # Interpolate threshold contrast for both sky brightness indices
+    interpolated_contrast_a = (
+        ContrastReserveConfig.LTC[sky_brightness_index_a][angle_index + 1] +
+        angle_fraction * (
+            ContrastReserveConfig.LTC[sky_brightness_index_a][angle_index + 2] -
+            ContrastReserveConfig.LTC[sky_brightness_index_a][angle_index + 1]
+        )
+    )
+    interpolated_contrast_b = (
+        ContrastReserveConfig.LTC[sky_brightness_index_b][angle_index + 1] +
+        angle_fraction * (
+            ContrastReserveConfig.LTC[sky_brightness_index_b][angle_index + 2] -
+            ContrastReserveConfig.LTC[sky_brightness_index_b][angle_index + 1]
+        )
+    )
+
+    if sky_background_brightness < ContrastReserveConfig.LTC[0][0]:
+        sky_background_brightness = ContrastReserveConfig.LTC[0][0]
+
+    if int_sky_brightness >= ContrastReserveConfig.LTC[ContrastReserveConfig.LTC_SIZE - 1][0]:
+        log_threshold_contrast = (
+            interpolated_contrast_b +
+            (sky_background_brightness - ContrastReserveConfig.LTC[ContrastReserveConfig.LTC_SIZE - 1][0]) *
+            (interpolated_contrast_b - interpolated_contrast_a)
+        )
     else:
-        log_threshold_contrast = interpolated_a + (sbb - int_sb) * (interpolated_b - interpolated_a)
-    
-    if log_threshold_contrast > max_log:
-        log_threshold_contrast = max_log
-    elif log_threshold_contrast < -max_log:
-        log_threshold_contrast = -max_log
-        
+        log_threshold_contrast = (
+            interpolated_contrast_a +
+            (sky_background_brightness - int_sky_brightness) *
+            (interpolated_contrast_b - interpolated_contrast_a)
+        )
+
+    if log_threshold_contrast > max_log_contrast:
+        log_threshold_contrast = max_log_contrast
+    elif log_threshold_contrast < -max_log_contrast:
+        log_threshold_contrast = -max_log_contrast
+
     return log_threshold_contrast
 
 

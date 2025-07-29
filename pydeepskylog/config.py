@@ -9,12 +9,22 @@ class ContrastReserveConfig:
     Configuration class for contrast reserve calculations.
     Contains constants used in the contrast_reserve.py module.
     """
-    LTC_SIZE = 24
-    ANGLE_SIZE = 7
+    # ANGLE: Logarithmic angular size grid
+    # ANGLE is a 1D array of log10(angular size in arcminutes) values.
+    # Each entry defines a grid point for the angular size axis in the LTC table.
+    # Used for interpolation of threshold contrast as a function of object angular size.
     ANGLE = [
         -0.2255, 0.5563, 0.9859, 1.260,
         1.742, 2.083, 2.556,
     ]
+
+    ANGLE_SIZE = len(ANGLE)
+
+    # LTC: Log Threshold Contrast Table
+    # LTC is a 2D array where each row corresponds to a specific sky background brightness (integer values from 4 to 23).
+    # Each column corresponds to a log10(angular size) value as defined in the ANGLE array.
+    # LTC[sb][i] gives the log threshold contrast for sky brightness index sb and angle index i.
+    # Used for interpolating the minimum contrast required for detection at given sky brightness and object size.
     LTC = [
         [
             4, -0.3769, -1.8064, -2.3368, -2.4601,
@@ -113,3 +123,5 @@ class ContrastReserveConfig:
             0.6520, 0.2410, -0.1210,
         ],
     ]
+
+    LTC_SIZE = len(LTC)
