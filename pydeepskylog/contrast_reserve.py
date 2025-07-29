@@ -119,7 +119,7 @@ def surface_brightness(magnitude: float, object_diameter1: float, object_diamete
 
 
 def contrast_reserve(
-        sqm: float, telescope_diameter: float, magnification: float, magnitude: float,
+        sqm: float, telescope_diameter: float, magnification: float, surf_brightness: float, magnitude: float,
         object_diameter1: float, object_diameter2: float
 ) -> float:
     """
@@ -134,6 +134,7 @@ def contrast_reserve(
     :param sqm: The sky quality meter reading
     :param telescope_diameter: The diameter of the telescope in mm
     :param magnification: The magnification of the telescope
+    :param surf_brightness: The surface brightness of the object in magnitudes per square arc second
     :param magnitude: The magnitude of the object to observe
     :param object_diameter1: The diameter along the major axis of the object in arc seconds
     :param object_diameter2: The diameter along the minor axis of the object in arc seconds
@@ -159,7 +160,11 @@ def contrast_reserve(
     max_log = 37
 
     # Log Object contrast
-    log_object_contrast = -0.4 * (surface_brightness(magnitude, object_diameter1, object_diameter2) - sqm)
+    if surf_brightness:
+        # If the surface brightness is given, use it to calculate the log object contrast
+        log_object_contrast = -0.4 * (surf_brightness - sqm)
+    else:
+        log_object_contrast = -0.4 * (surface_brightness(magnitude, object_diameter1, object_diameter2) - sqm)
 
     # The preparations are finished, we can now start the calculations
     x = magnification
@@ -265,7 +270,7 @@ if __name__ == '__main__':
     print(surface_brightness(15, 8220, 8220))
 
     # Calculate the contrast reserve of an object
-    print(contrast_reserve(22, 457, 118, 11, 600, 600))
+    print(contrast_reserve(22, 457, 118, 13.5, 11, 600, 600))
 
     available_magnifications = [
         66, 103, 158, 257, 411,

@@ -36,7 +36,7 @@ import pydeepskylog as pds
 
 # Calculate contrast reserve. The object diameters are given in arc seconds.
 contrast_reserve = pds.contrast_reserve(sqm=22, telescope_diameter=457, magnification=118, magnitude=11,
-                                        object_diameter1=600, object_diameter2=600)
+                                        surf_brightness=10.5, object_diameter1=600, object_diameter2=600)
 print(contrast_reserve)
 
 # Define a list of possible magnifications
@@ -74,6 +74,9 @@ print(pds.dsl_eyepieces('username'))
 
 # Get all defined lenses of a DeepskyLog user
 print(pds.dsl_lenses('username'))
+
+# Get all defined filters of a DeepskyLog user
+print(pds.dsl_filters('username'))
 
 # Get a list of possible magnifications for a given telescope and the eyepieces as defined in DeepskyLog
 telescope = pds.dsl_instruments('username')[0]

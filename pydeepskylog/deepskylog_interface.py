@@ -42,6 +42,20 @@ def dsl_lenses(username: str) -> dict:
     """
     return _dsl_api_call("lenses", username)
 
+def dsl_filters(username: str) -> dict:
+    """
+    Get all defined filters of a DeepskyLog user.
+
+    This function retrieves the filters defined by a specific user in the DeepskyLog system.
+
+    Args:
+        username (str): The username of the DeepskyLog user.
+
+    Returns:
+        dict: A dictionary containing the filters' specifications, in JSON format.
+    """
+    return _dsl_api_call("filters", username)
+
 
 def calculate_magnifications(instrument: dict, eyepieces: dict) -> list:
     """
