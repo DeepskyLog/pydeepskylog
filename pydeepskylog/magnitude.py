@@ -11,12 +11,14 @@ def nelm_to_sqm(nelm: float, fst_offset:float=0.0) -> float:
 
     :return: The SQM value
     """
+    if not isinstance(nelm, (int, float)):
+        raise ValueError("NELM must be a number")
+    if not isinstance(fst_offset, (int, float)):
+        raise ValueError("fst_offset must be a number")
+    if nelm < 0 or nelm > 6.7:
+        raise ValueError("NELM must be between 0 and 6.7")
     sqm = 21.58 - 5 * math.log10(math.pow(10, 1.586 - (nelm + fst_offset) / 5.0) - 1.0)
-
-    if sqm > 22.0:
-        return 22.0
-    else:
-        return sqm
+    return min(sqm, 22.0)
 
 
 def nelm_to_bortle(nelm: float) -> int:
@@ -26,6 +28,11 @@ def nelm_to_bortle(nelm: float) -> int:
     :param nelm: The Naked Eye Limiting Magnitude
     :return: The Bortle scale value (1 - 9)
     """
+    if not isinstance(nelm, (int, float)):
+        raise ValueError("NELM must be a number")
+
+    if nelm < 0 or nelm > 6.7:
+        raise ValueError("NELM must be between 0 and 6.7")
     if nelm < 3.6:
         return 9
     elif nelm < 3.9:
@@ -53,6 +60,10 @@ def sqm_to_bortle(sqm: float) -> int:
     :param sqm: The Sky Quality Meter value
     :return: The Bortle scale value (1 - 9)
     """
+    if not isinstance(sqm, (int, float)):
+        raise ValueError("SQM must be a number")
+    if sqm < 0 or sqm > 22:
+        raise ValueError("SQM must be between 0 and 22")
     if sqm <= 17.5:
         return 9
     elif sqm <= 18.0:
@@ -81,6 +92,12 @@ def sqm_to_nelm(sqm: float, fst_offset: float=0.0) -> float:
 
     :return: The Naked Eye Limiting Magnitude
     """
+    if not isinstance(sqm, (int, float)):
+        raise ValueError("SQM must be a number")
+    if not isinstance(fst_offset, (int, float)):
+        raise ValueError("fst_offset must be a number")
+    if sqm < 0 or sqm > 22:
+        raise ValueError("SQM must be between 0 and 22")
     nelm = 7.93 - 5 * math.log10(1 + math.pow(10, 4.316 - sqm / 5.0))
 
     if nelm < 2.5:
@@ -98,6 +115,12 @@ def bortle_to_nelm(bortle: int, fst_offset: float=0.0) -> float:
 
     :return: The NELM value
     """
+    if not isinstance(bortle, int):
+        raise ValueError("Bortle must be an integer")
+    if not 1 <= bortle <= 9:
+        raise ValueError("Bortle must be between 1 and 9")
+    if not isinstance(fst_offset, (int, float)):
+        raise ValueError("fst_offset must be a number")
     # Lookup dictionary mapping Bortle scale to NELM values
     bortle_nelm_map = {
         1: 6.6,
@@ -111,10 +134,7 @@ def bortle_to_nelm(bortle: int, fst_offset: float=0.0) -> float:
         9: 3.6
     }
     
-    if bortle in bortle_nelm_map:
-        return bortle_nelm_map[bortle] - fst_offset
-    else:
-        return 0.0
+    return bortle_nelm_map[bortle] - fst_offset
 
 
 def bortle_to_sqm(bortle: int) -> float:
@@ -124,6 +144,10 @@ def bortle_to_sqm(bortle: int) -> float:
     :param bortle: The bortle scale
     :return: The SQM value
     """
+    if not isinstance(bortle, int):
+        raise ValueError("Bortle must be an integer")
+    if not 1 <= bortle <= 9:
+        raise ValueError("Bortle must be between 1 and 9")
     # Lookup dictionary mapping Bortle scale to SQM values
     bortle_sqm_map = {
         1: 21.85,
@@ -136,8 +160,5 @@ def bortle_to_sqm(bortle: int) -> float:
         8: 17.75,
         9: 17.5
     }
-    
-    if bortle in bortle_sqm_map:
-        return bortle_sqm_map[bortle]
-    else:
-        return 0.0
+
+    return bortle_sqm_map[bortle]
