@@ -1,110 +1,6 @@
 import logging
 import math
-
-_LTCSize = 24
-_angleSize = 7
-_angle = [
-    -0.2255, 0.5563, 0.9859, 1.260,
-    1.742, 2.083, 2.556,
-]
-_LTC = [
-    [
-        4, -0.3769, -1.8064, -2.3368, -2.4601,
-        -2.5469, -2.5610, -2.5660,
-    ],
-    [
-        5, -0.3315, -1.7747, -2.3337, -2.4608,
-        -2.5465, -2.5607, -2.5658,
-    ],
-    [
-        6, -0.2682, -1.7345, -2.3310, -2.4605,
-        -2.5467, -2.5608, -2.5658,
-    ],
-    [
-        7, -0.1982, -1.6851, -2.3140, -2.4572,
-        -2.5481, -2.5615, -2.5665,
-    ],
-    [
-        8, -0.1238, -1.6252, -2.2791, -2.4462,
-        -2.5463, -2.5597, -2.5646,
-    ],
-    [
-        9, -0.0424, -1.5529, -2.2297, -2.4214,
-        -2.5343, -2.5501, -2.5552,
-    ],
-    [
-        10, 0.0498, -1.4655, -2.1659, -2.3763,
-        -2.5047, -2.5269, -2.5333,
-    ],
-    [
-        11, 0.1596, -1.3581, -2.0810, -2.3036,
-        -2.4499, -2.4823, -2.4937,
-    ],
-    [
-        12, 0.2934, -1.2256, -1.9674, -2.1965,
-        -2.3631, -2.4092, -2.4318,
-    ],
-    [
-        13, 0.4557, -1.0673, -1.8186, -2.0531,
-        -2.2445, -2.3083, -2.3491,
-    ],
-    [
-        14, 0.6500, -0.8841, -1.6292, -1.8741,
-        -2.0989, -2.1848, -2.2505,
-    ],
-    [
-        15, 0.8808, -0.6687, -1.3967, -1.6611,
-        -1.9284, -2.0411, -2.1375,
-    ],
-    [
-        16, 1.1558, -0.3952, -1.1264, -1.4176,
-        -1.7300, -1.8727, -2.0034,
-    ],
-    [
-        17, 1.4822, -0.0419, -0.8243, -1.1475,
-        -1.5021, -1.6768, -1.8420,
-    ],
-    [
-        18, 1.8559, 0.3458, -0.4924, -0.8561,
-        -1.2661, -1.4721, -1.6624,
-    ],
-    [
-        19, 2.2669, 0.6960, -0.1315, -0.5510,
-        -1.0562, -1.2892, -1.4827,
-    ],
-    [
-        20, 2.6760, 1.0880, 0.2060, -0.3210,
-        -0.8800, -1.1370, -1.3620,
-    ],
-    [
-        21, 2.7766, 1.2065, 0.3467, -0.1377,
-        -0.7361, -0.9964, -1.2439,
-    ],
-    [
-        22, 2.9304, 1.3821, 0.5353, 0.0328,
-        -0.5605, -0.8606, -1.1187,
-    ],
-    [
-        23, 3.1634, 1.6107, 0.7708, 0.2531,
-        -0.3895, -0.7030, -0.9681,
-    ],
-    [
-        24, 3.4643, 1.9034, 1.0338, 0.4943,
-        -0.2033, -0.5259, -0.8288,
-    ],
-    [
-        25, 3.8211, 2.2564, 1.3265, 0.7605,
-        0.0172, -0.2992, -0.6394,
-    ],
-    [
-        26, 4.2210, 2.6320, 1.6990, 1.1320,
-        0.2860, -0.0510, -0.4080,
-    ],
-    [
-        27, 4.6100, 3.0660, 2.1320, 1.5850,
-        0.6520, 0.2410, -0.1210,
-    ],
-]
+from pydeepskylog.config import ContrastReserveConfig
 
 
 def surface_brightness(magnitude: float, object_diameter1: float, object_diameter2: float) -> float:
@@ -114,7 +10,22 @@ def surface_brightness(magnitude: float, object_diameter1: float, object_diamete
     :param object_diameter1: The diameter along the major axis of the object in arc seconds
     :param object_diameter2: The diameter along the minor axis of the object in arc seconds
     :return: The surface brightness of the object in magnitudes per square arc second
+    :raises ValueError: If any parameter is not a number or if object diameters are not positive
     """
+    # Validate inputs
+    if not isinstance(magnitude, (int, float)):
+        raise ValueError("Magnitude must be a number")
+    if not isinstance(object_diameter1, (int, float)):
+        raise ValueError("Object diameter 1 must be a number")
+    if not isinstance(object_diameter2, (int, float)):
+        raise ValueError("Object diameter 2 must be a number")
+    
+    # Check for positive diameters
+    if object_diameter1 <= 0:
+        raise ValueError("Object diameter 1 must be positive")
+    if object_diameter2 <= 0:
+        raise ValueError("Object diameter 2 must be positive")
+        
     return magnitude + (2.5 * math.log10(2827.0 * (object_diameter1 / 60) * (object_diameter2 / 60)))
 
 
@@ -140,16 +51,56 @@ def contrast_reserve(
     :param object_diameter2: The diameter along the minor axis of the object in arc seconds
 
     :return: The contrast reserve of the object
+    :raises ValueError: If parameters have invalid types or values
     """
     # Log a string using python logger
     logger = logging.getLogger()
     logger.info("Calculating the contrast reserve")
+    
+    # Validate required numeric inputs
+    if not isinstance(sqm, (int, float)):
+        raise ValueError("SQM must be a number")
+    if not isinstance(telescope_diameter, (int, float)):
+        raise ValueError("Telescope diameter must be a number")
+    if not isinstance(magnification, (int, float)):
+        raise ValueError("Magnification must be a number")
+    
+    # Check for positive values
+    if telescope_diameter <= 0:
+        raise ValueError("Telescope diameter must be positive")
+    if magnification <= 0:
+        raise ValueError("Magnification must be positive")
+        
+    # Validate surf_brightness if provided
+    if surf_brightness is not None and not isinstance(surf_brightness, (int, float)):
+        raise ValueError("Surface brightness must be a number or None")
+        
+    # Validate magnitude if provided and needed
+    if surf_brightness is None and magnitude is not None:
+        if not isinstance(magnitude, (int, float)):
+            raise ValueError("Magnitude must be a number or None")
+            
+    # Validate object diameters if provided
+    if object_diameter1 is not None and not isinstance(object_diameter1, (int, float)):
+        raise ValueError("Object diameter 1 must be a number or None")
+    if object_diameter2 is not None and not isinstance(object_diameter2, (int, float)):
+        raise ValueError("Object diameter 2 must be a number or None")
+        
+    # Check for positive diameters if provided
+    if object_diameter1 is not None and object_diameter1 <= 0:
+        raise ValueError("Object diameter 1 must be positive")
+    if object_diameter2 is not None and object_diameter2 <= 0:
+        raise ValueError("Object diameter 2 must be positive")
 
     aperture_in_inches = telescope_diameter / 25.4
 
     # Minimum useful magnification
     sbb1: float = sqm - (5 * math.log10(2.833 * aperture_in_inches))
 
+    if object_diameter1 is None or object_diameter2 is None:
+        # If the object diameters are not given, we cannot calculate the contrast reserve
+        logger.error("Cannot calculate contrast reserve, missing object diameters")
+        return None
     object_diameter1_in_arc_minutes = object_diameter1 / 60.0
     object_diameter2_in_arc_minutes = object_diameter2 / 60.0
 
@@ -162,8 +113,14 @@ def contrast_reserve(
     # Log Object contrast
     if surf_brightness:
         # If the surface brightness is given, use it to calculate the log object contrast
-        log_object_contrast = -0.4 * (surf_brightness - sqm)
+        # Convert surf_brightness to magnitudes per square arc second
+        log_object_contrast = -0.4 * (surf_brightness + 8.89 - sqm)
     else:
+        # Check if the magnitude, object_diameter1, and object_diameter2 are given
+        if magnitude is None:
+            # If not, we cannot calculate the log object contrast
+            logger.error("Cannot calculate log object contrast, missing parameters")
+            return None
         log_object_contrast = -0.4 * (surface_brightness(magnitude, object_diameter1, object_diameter2) - sqm)
 
     # The preparations are finished, we can now start the calculations
@@ -177,7 +134,6 @@ def contrast_reserve(
     sb = sbb
     i = 0
 
-    # int of surface brightness
     # Get integer of the surface brightness
     int_sb = int(sb)
 
@@ -189,13 +145,13 @@ def contrast_reserve(
         sb_ia = 0
 
     # max sb_ia index cannot > 22 so that max sb_ib <= 23
-    if sb_ia > _LTCSize - 2:
-        sb_ia = _LTCSize - 2
+    if sb_ia > ContrastReserveConfig.LTC_SIZE - 2:
+        sb_ia = ContrastReserveConfig.LTC_SIZE - 2
 
     # surface brightness index B
     sb_ib = sb_ia + 1
 
-    while i < _angleSize and log_angle > _angle[i]:
+    while i < ContrastReserveConfig.ANGLE_SIZE and log_angle > ContrastReserveConfig.ANGLE[i]:
         i = i + 1
 
     i += 1
@@ -205,24 +161,24 @@ def contrast_reserve(
 
     if i < 0:
         i = 0
-        log_angle = _angle[0]
+        log_angle = ContrastReserveConfig.ANGLE[0]
 
-    if i == _angleSize - 1:
-        i = _angleSize - 2
+    if i == ContrastReserveConfig.ANGLE_SIZE - 1:
+        i = ContrastReserveConfig.ANGLE_SIZE - 2
 
     # ie, if log_angle = 4 and angle[i] = 3 and Angle[i+1] = 5, interpolated_angle = .5, or .5 of the way between
     # angle[i] and angle[i + 1]
-    interpolated_angle = (log_angle - _angle[i]) / (_angle[i + 1] - _angle[i])
+    interpolated_angle = (log_angle - ContrastReserveConfig.ANGLE[i]) / (ContrastReserveConfig.ANGLE[i + 1] - ContrastReserveConfig.ANGLE[i])
 
     # add 1 to i because first entry in LTC is sky background brightness
-    interpolated_a = _LTC[sb_ia][i + 1] + interpolated_angle * (_LTC[sb_ia][i + 2] - _LTC[sb_ia][i + 1])
-    interpolated_b = _LTC[sb_ib][i + 1] + interpolated_angle * (_LTC[sb_ib][i + 2] - _LTC[sb_ib][i + 1])
+    interpolated_a = ContrastReserveConfig.LTC[sb_ia][i + 1] + interpolated_angle * (ContrastReserveConfig.LTC[sb_ia][i + 2] - ContrastReserveConfig.LTC[sb_ia][i + 1])
+    interpolated_b = ContrastReserveConfig.LTC[sb_ib][i + 1] + interpolated_angle * (ContrastReserveConfig.LTC[sb_ib][i + 2] - ContrastReserveConfig.LTC[sb_ib][i + 1])
 
-    if sb < _LTC[0][0]:
-        sb = _LTC[0][0]
+    if sb < ContrastReserveConfig.LTC[0][0]:
+        sb = ContrastReserveConfig.LTC[0][0]
 
-    if int_sb >= _LTC[_LTCSize - 1][0]:
-        log_threshold_contrast = interpolated_b + (sb - _LTC[_LTCSize - 1][0]) * (interpolated_b - interpolated_a)
+    if int_sb >= ContrastReserveConfig.LTC[ContrastReserveConfig.LTC_SIZE - 1][0]:
+        log_threshold_contrast = interpolated_b + (sb - ContrastReserveConfig.LTC[ContrastReserveConfig.LTC_SIZE - 1][0]) * (interpolated_b - interpolated_a)
     else:
         log_threshold_contrast = interpolated_a + (sb - int_sb) * (interpolated_b - interpolated_a)
 
@@ -238,25 +194,69 @@ def contrast_reserve(
 
 
 def optimal_detection_magnification(
-        sqm: float, telescope_diameter: float, magnitude: float, object_diameter1: float, object_diameter2: float,
+        sqm: float, telescope_diameter: float, surf_brightness: float, magnitude: float, object_diameter1: float, object_diameter2: float,
         magnifications: list) -> float:
     """
     Calculate the best magnification to use for the object to detect it
 
     :param sqm: The sky quality meter reading
     :param telescope_diameter: The diameter of the telescope in mm
+    :param surf_brightness: The surface brightness of the object in magnitudes per square arc second
     :param magnitude: The magnitude of the object to observe
     :param object_diameter1: The diameter along the major axis of the object in arc seconds
     :param object_diameter2: The diameter along the minor axis of the object in arc seconds
     :param magnifications: The list of magnifications available for the telescope
     :return: The best magnification to use for the object
+    :raises ValueError: If parameters have invalid types or values
     """
+    # Validate required numeric inputs
+    if not isinstance(sqm, (int, float)):
+        raise ValueError("SQM must be a number")
+    if not isinstance(telescope_diameter, (int, float)):
+        raise ValueError("Telescope diameter must be a number")
+    
+    # Check for positive telescope diameter
+    if telescope_diameter <= 0:
+        raise ValueError("Telescope diameter must be positive")
+        
+    # Validate surf_brightness if provided
+    if surf_brightness is not None and not isinstance(surf_brightness, (int, float)):
+        raise ValueError("Surface brightness must be a number or None")
+        
+    # Validate magnitude if provided and needed
+    if surf_brightness is None and magnitude is not None:
+        if not isinstance(magnitude, (int, float)):
+            raise ValueError("Magnitude must be a number or None")
+            
+    # Validate object diameters if provided
+    if object_diameter1 is not None and not isinstance(object_diameter1, (int, float)):
+        raise ValueError("Object diameter 1 must be a number or None")
+    if object_diameter2 is not None and not isinstance(object_diameter2, (int, float)):
+        raise ValueError("Object diameter 2 must be a number or None")
+        
+    # Check for positive diameters if provided
+    if object_diameter1 is not None and object_diameter1 <= 0:
+        raise ValueError("Object diameter 1 must be positive")
+    if object_diameter2 is not None and object_diameter2 <= 0:
+        raise ValueError("Object diameter 2 must be positive")
+        
+    # Validate magnifications list
+    if not isinstance(magnifications, list):
+        raise ValueError("Magnifications must be a list")
+    
+    # Validate each magnification in the list
+    for mag in magnifications:
+        if not isinstance(mag, (int, float)):
+            raise ValueError("Each magnification must be a number")
+        if mag <= 0:
+            raise ValueError("Each magnification must be positive")
+    
     best_contrast = -999
     best_x = 0
 
     for magnification in magnifications:
         contrast = contrast_reserve(
-            sqm, telescope_diameter, magnification, magnitude, object_diameter1, object_diameter2)
+            sqm, telescope_diameter, magnification, surf_brightness, magnitude, object_diameter1, object_diameter2)
         if contrast > best_contrast:
             best_contrast = contrast
             best_x = magnification
@@ -264,18 +264,3 @@ def optimal_detection_magnification(
     return best_x
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    # Calculate the surface brightness of an object
-    print(surface_brightness(15, 8220, 8220))
-
-    # Calculate the contrast reserve of an object
-    print(contrast_reserve(22, 457, 118, 13.5, 11, 600, 600))
-
-    available_magnifications = [
-        66, 103, 158, 257, 411,
-        76, 118, 182, 296, 473,
-        133, 206, 317, 514, 823,
-    ]
-
-    print(optimal_detection_magnification(20.15, 457, 11, 600, 600, available_magnifications))
