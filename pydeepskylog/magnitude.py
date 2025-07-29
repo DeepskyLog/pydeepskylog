@@ -6,6 +6,10 @@ def nelm_to_sqm(nelm: float, fst_offset:float=0.0) -> float:
     Calculate the SQM value from the NELM (Naked Eye Limiting Magnitude) value. In these calculations, the NELM value is
     maximum 6.7.
 
+    Formula:
+        SQM = 21.58 - 5 * log10(10^(1.586 - (NELM + fst_offset)/5) - 1)
+    This formula estimates the sky brightness (SQM) from the limiting magnitude visible to the naked eye.
+
     :param nelm: The Naked Eye Limiting Magnitude
     :param fst_offset: The offset between the real Nelm and the Nelm for the observer
 
@@ -25,6 +29,9 @@ def nelm_to_bortle(nelm: float) -> int:
     """
     Calculate the Bortle scale value from the NELM (Naked Eye Limiting Magnitude) value. In these calculations, the NELM
     value is maximum 6.7.
+
+    The Bortle scale is mapped from NELM using threshold values based on observational standards.
+
     :param nelm: The Naked Eye Limiting Magnitude
     :return: The Bortle scale value (1 - 9)
     """
@@ -57,6 +64,8 @@ def sqm_to_bortle(sqm: float) -> int:
     """
     Calculate the Bortle scale value from the SQM (Sky Quality Meter) value.
 
+    The Bortle scale is mapped from SQM using threshold values based on observational standards.
+
     :param sqm: The Sky Quality Meter value
     :return: The Bortle scale value (1 - 9)
     """
@@ -87,9 +96,13 @@ def sqm_to_bortle(sqm: float) -> int:
 def sqm_to_nelm(sqm: float, fst_offset: float=0.0) -> float:
     """
     Calculate the Naked Eye Limiting Magnitude from the SQM (Sky Quality Meter) value.
+
+    Formula:
+        NELM = 7.93 - 5 * log10(1 + 10^(4.316 - SQM/5))
+    This formula estimates the faintest star visible to the naked eye from the measured sky brightness.
+
     :param sqm: The SQM value
     :param fst_offset: The offset between the real Nelm and the Nelm for the observer
-
     :return: The Naked Eye Limiting Magnitude
     """
     if not isinstance(sqm, (int, float)):
@@ -110,9 +123,10 @@ def bortle_to_nelm(bortle: int, fst_offset: float=0.0) -> float:
     """
     Calculate the NELM value if the bortle scale is given.
 
+    Uses a lookup table to map Bortle scale values to typical NELM values.
+
     :param bortle: The bortle scale
     :param fst_offset: The offset between the real Nelm and the Nelm for the observer
-
     :return: The NELM value
     """
     if not isinstance(bortle, int):
@@ -140,6 +154,8 @@ def bortle_to_nelm(bortle: int, fst_offset: float=0.0) -> float:
 def bortle_to_sqm(bortle: int) -> float:
     """
     Calculate the SQM value if the bortle scale is given.
+
+    Uses a lookup table to map Bortle scale values to typical NELM values.
 
     :param bortle: The bortle scale
     :return: The SQM value
