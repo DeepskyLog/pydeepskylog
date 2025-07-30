@@ -7,6 +7,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- (Describe any new features or enhancements here)
+
+### Changed
+- (Describe any changes here)
+
+### Fixed
+- (Describe any bug fixes here)
+
+---
+
+## [1.6] - 2025-07-30
+
+### Added
 - Initial changelog file.
 - Comprehensive API documentation using Sphinx.
 - Detailed docstrings for mathematical formulas and astronomical concepts.
@@ -20,14 +33,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Continuous integration setup for automated testing.
 - Refactoring of the package structure for better organization.
 - Documentation for API endpoints and expected responses.
-
-### Changed
-- (Describe any changes here)
-
-### Fixed
-- (Describe any bug fixes here)
-
----
+- Add development dependencies to `setup.py`.
+- Implement rate limiting for API requests.
+- Add input sanitization for all user inputs.
+- Add template for issue reporting and feature requests.
 
 ## [1.5] - 2025-07-29
 
