@@ -9,12 +9,30 @@ from pydeepskylog.validation import (
 
 def surface_brightness(magnitude: float, object_diameter1: float, object_diameter2: float) -> float:
     """
-    Calculates the surface brightness of the target.  This is needed to calculate the contrast of the target.
-    :param magnitude: The magnitude of the object
-    :param object_diameter1: The diameter along the major axis of the object in arc seconds
-    :param object_diameter2: The diameter along the minor axis of the object in arc seconds
-    :return: The surface brightness of the object in magnitudes per square arc second
-    :raises InvalidParameterError: If any parameter is not a number or if object diameters are not positive
+    Calculate the surface brightness of an astronomical object.  This is needed to calculate the contrast of the target.
+
+    Surface brightness (SB) is the brightness of an extended object per unit area, expressed in magnitudes per square arcsecond.
+    It is calculated using the formula:
+
+        SB = m + 2.5 * log10(2827 * (D1 / 60) * (D2 / 60))
+
+    where:
+        - m is the integrated magnitude of the object,
+        - D1 and D2 are the major and minor axis diameters in arcseconds,
+        - 2827 is the number of square arcseconds in one square arcminute.
+
+    This formula converts the total magnitude into a per-area brightness, which is important for visual detection thresholds.
+
+    Args:
+        magnitude (float): Integrated magnitude of the object.
+        object_diameter1 (float): Major axis diameter in arcseconds.
+        object_diameter2 (float): Minor axis diameter in arcseconds.
+
+    Returns:
+        float: Surface brightness in magnitudes per square arcsecond.
+
+    Raises:
+        InvalidParameterError: If any parameter is invalid.
     """
     # Validate inputs
     logger: logging = logging.getLogger(__name__)
@@ -32,16 +50,23 @@ def validate_contrast_reserve_inputs(
         object_diameter1: Optional[float], object_diameter2: Optional[float]
 ) -> None:
     """
-    Validates the inputs for the contrast_reserve function.
-    
-    :param sqm: The sky quality meter reading
-    :param telescope_diameter: The diameter of the telescope in mm
-    :param magnification: The magnification of the telescope
-    :param surf_brightness: The surface brightness of the object in magnitudes per square arc second
-    :param magnitude: The magnitude of the object to observe
-    :param object_diameter1: The diameter along the major axis of the object in arc seconds
-    :param object_diameter2: The diameter along the minor axis of the object in arc seconds
-    :raises InvalidParameterError: If parameters have invalid types or values
+    Validate the inputs for the contrast reserve calculation.
+
+    This function ensures that all required parameters for the contrast reserve calculation
+    are of valid types and within acceptable ranges. It checks for the presence of required
+    parameters and validates optional parameters if provided.
+
+    Args:
+        sqm (float): The sky quality meter reading, representing the sky brightness in magnitudes per square arcsecond.
+        telescope_diameter (float): The diameter of the telescope in millimeters.
+        magnification (float): The magnification of the telescope.
+        surf_brightness (Optional[float]): The surface brightness of the object in magnitudes per square arcsecond.
+        magnitude (Optional[float]): The integrated magnitude of the object.
+        object_diameter1 (Optional[float]): The major axis diameter of the object in arcseconds.
+        object_diameter2 (Optional[float]): The minor axis diameter of the object in arcseconds.
+
+    Raises:
+        InvalidParameterError: If any parameter is invalid (e.g., out of range, incorrect type).
     """
     # Validate required numeric inputs
     logger: logging = logging.getLogger(__name__)
@@ -60,13 +85,27 @@ def calculate_initial_parameters(
         object_diameter1: float, object_diameter2: float
 ) -> Tuple[float, float, float, float]:
     """
-    Calculates initial parameters needed for contrast reserve calculation.
-    
-    :param sqm: The sky quality meter reading
-    :param telescope_diameter: The diameter of the telescope in mm
-    :param object_diameter1: The diameter along the major axis of the object in arc seconds
-    :param object_diameter2: The diameter along the minor axis of the object in arc seconds
-    :return: A tuple containing (aperture_in_inches, sbb1, object_diameter1_in_arc_minutes, object_diameter2_in_arc_minutes)
+    Calculate initial parameters for contrast reserve calculations.
+
+    This function computes intermediate values such as the telescope aperture in inches,
+    the sky background brightness at minimum magnification, and the object's angular size
+    in arcminutes.
+
+    Args:
+        sqm (float): The sky quality meter reading in magnitudes per square arcsecond.
+        telescope_diameter (float): The diameter of the telescope in millimeters.
+        object_diameter1 (float): The major axis diameter of the object in arcseconds.
+        object_diameter2 (float): The minor axis diameter of the object in arcseconds.
+
+    Returns:
+        Tuple[float, float, float, float]: A tuple containing:
+            - Aperture in inches.
+            - Sky background brightness at minimum magnification.
+            - Major axis diameter in arcminutes.
+            - Minor axis diameter in arcminutes.
+
+    Raises:
+        InvalidParameterError: If object diameters are not provided or invalid.
     """
     logger: logging = logging.getLogger(__name__)
 
