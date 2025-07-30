@@ -5,11 +5,40 @@ from typing import Dict, List, Any, Optional
 from pydeepskylog.exceptions import (
     APIConnectionError, APITimeoutError, APIAuthenticationError, APIResponseError, InvalidParameterError
 )
+import threading
+from functools import wraps
+from pydeepskylog.sanitization import sanitize_string
+
 DSL_API_BASE_URL: str = "https://test.deepskylog.org/api/"  # Change this as needed
 
 # Simple in-memory cache: {url: (timestamp, data)}
 _DSL_API_CACHE: Dict[str, tuple[float, Any]] = {}
 _DSL_API_CACHE_TTL: int = 300  # seconds (5 minutes)
+
+# Rate limiting parameters
+_DSL_API_RATE_LIMIT = 1  # max requests
+_DSL_API_RATE_PERIOD = 1.0  # seconds
+
+_rate_lock = threading.Lock()
+_rate_timestamps = []
+
+def rate_limited(max_calls: int, period: float):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            with _rate_lock:
+                now = time.time()
+                # Remove timestamps outside the window
+                while _rate_timestamps and _rate_timestamps[0] <= now - period:
+                    _rate_timestamps.pop(0)
+                if len(_rate_timestamps) >= max_calls:
+                    sleep_time = period - (now - _rate_timestamps[0])
+                    if sleep_time > 0:
+                        time.sleep(sleep_time)
+                _rate_timestamps.append(time.time())
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
 
 def dsl_instruments(username: str) -> Dict[str, Any]:
     """
@@ -39,6 +68,7 @@ def dsl_instruments(username: str) -> Dict[str, Any]:
         >>> for inst_id, inst in instruments.items():
         ...     print(inst["name"], inst["diameter"])
     """
+    username = sanitize_string(username, max_length=64)
     return _dsl_api_call("instrument", username)
 
 def dsl_eyepieces(username: str) -> Dict[str, Any]:
@@ -68,6 +98,7 @@ def dsl_eyepieces(username: str) -> Dict[str, Any]:
         >>> for ep_id, ep in eyepieces.items():
         ...     print(ep["name"], ep["focal_length_mm"])
     """
+    username = sanitize_string(username, max_length=64)
     return _dsl_api_call("eyepieces", username)
 
 def dsl_lenses(username: str) -> Dict[str, Any]:
@@ -97,6 +128,7 @@ def dsl_lenses(username: str) -> Dict[str, Any]:
         >>> for lens_id, lens in lenses.items():
         ...     print(lens["name"], lens["focal_length_mm"])
     """
+    username = sanitize_string(username, max_length=64)
     return _dsl_api_call("lenses", username)
 
 def dsl_filters(username: str) -> Dict[str, Any]:
@@ -126,6 +158,7 @@ def dsl_filters(username: str) -> Dict[str, Any]:
         >>> for filter_id, flt in filters.items():
         ...     print(flt["name"], flt["type"])
     """
+    username = sanitize_string(username, max_length=64)
     return _dsl_api_call("filters", username)
 
 
@@ -240,6 +273,7 @@ def convert_instrument_type_to_string(instrument_type: int) -> str:
 
     return instrument_types[instrument_type]
 
+@rate_limited(_DSL_API_RATE_LIMIT, _DSL_API_RATE_PERIOD)
 def _dsl_api_call(api_call: str, username: str) -> Dict[str, Any]:
     """
     Make a GET request to the DeepskyLog API for a specific resource and user.
@@ -267,6 +301,7 @@ def _dsl_api_call(api_call: str, username: str) -> Dict[str, Any]:
         >>> data = _dsl_api_call\("instrument", "astro_user"\)
         >>> print\(data\)
     """
+    username = sanitize_string(username, max_length=64)
     api_url: str = f"{DSL_API_BASE_URL}{api_call}/{username}"
     now: float = time.time()
     logger: logging = logging.getLogger(__name__)
@@ -279,7 +314,7 @@ def _dsl_api_call(api_call: str, username: str) -> Dict[str, Any]:
             return data
 
     try:
-        response = requests.get(api_url, timeout=10)
+        response = requests.get(api_url, timeout=10, verify=True)
         if response.status_code in (401, 403):
             logger.error(f"Authentication failed for user '{username}' (status {response.status_code})")
             raise APIAuthenticationError(f"Authentication failed for user '{username}' (status {response.status_code})")
