@@ -110,6 +110,8 @@ for inst_id, inst in instruments.items():
     print(inst["name"], inst["diameter"])
 ```
 
+The API endpoints are documented in the [API Endpoints](docs/api_endpoints.md) section.
+
 ## Validation Utilities
 
 Validate a positive number:
@@ -172,18 +174,11 @@ Conversion methods are provided to convert magnitudes to SQM value and bortle sc
 
 Different formulae are available to convert magnitudes to SQM value.  The formula used here converts a sqm value of 22.0 to a naked eye limiting magnitude of 6.6.  The faintest star offset can be given to the formula.  If taking a value of -1.4 for the faintest star offset, the formula converts a sqm value of 22.0 to a naked eye limiting magnitude of 8.0.
 
-flowchart TD
-    NELM["Naked Eye Limiting Magnitude (NELM)"]
-    SQM["Sky Quality Meter (SQM)"]
-    Bortle["Bortle Scale"]
-
-    NELM -- "nelm_to_sqm()" --> SQM
-    SQM -- "sqm_to_nelm()" --> NELM
-    NELM -- "nelm_to_bortle()" --> Bortle
-    SQM -- "sqm_to_bortle()" --> Bortle
-    Bortle -- "bortle_to_nelm()" --> NELM
-    Bortle -- "bortle_to_sqm()" --> SQM
-
+| Measurement   | Description                                                                                      | Conversion Functions                  |
+|---------------|--------------------------------------------------------------------------------------------------|---------------------------------------|
+| NELM          | Naked Eye Limiting Magnitude, the faintest star visible to the naked eye under ideal conditions. | `nelm_to_sqm()`, `nelm_to_bortle()`   |
+| SQM           | Sky Quality Meter, a measure of sky brightness in magnitudes per square arcsecond.               | `sqm_to_nelm()`, `sqm_to_bortle()`    |
+| Bortle Scale  | A qualitative scale that classifies the night sky based on light pollution and visibility.       | `bortle_to_nelm()`, `bortle_to_sqm()` |
 
 ## Contributing
 
