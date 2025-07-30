@@ -1,17 +1,25 @@
-# pydeepskylog
+# pydeepskylog User Guide
+
+This guide provides practical examples for common use cases with the pydeepskylog package.
 
 ## Table of Contents
 
 - [Description](#description)
 - [Installation](#installation)
-- [Usage](#usage)
-- [Astronomical background](#astronomical-background)
+- [Basic Usage](#basic-usage)
+- [Magnitude and Sky Brightness Conversions](#magnitude-and-sky-brightness-conversions)
+- [Contrast Reserve Calculation](#contrast-reserve-calculation)
+- [Optimal Detection Magnification](#optimal-detection-magnification)
+- [DeepskyLog API Integration](#deepskylog-api-integration)
+- [Validation Utilities](#validation-utilities)
+- [Logging Configuration](#logging-configuration)
+- [API](#api)
+- [Astronomical Background](#astronomical-background)
   - [Contrast Reserve](#contrast-reserve)
   - [Optimal Detection Magnification](#optimal-detection-magnification)
   - [Magnitudes](#magnitudes)
-- [Contributing](#contributing)
-- [License](#license)
-- [Acknowledgements](#acknowledgements)
+
+---
 
 ## Description
 
@@ -20,69 +28,112 @@ This version of pydeepskylog provides the following functionality:
 
 + Calculating of contrast reserve and optimal detection magnification for deep-sky objects.
 + Conversion of magnitudes to SQM value and bortle scale and vice versa.
-
-In the future, it will also include utilities for fetching and adding observation logs from/to the DeepSkyLog website.
++ Fetching instruments, eyepieces, lenses, and filters from a DeepskyLog user account.
 
 ## Installation
+
+Install via pip:
 
 ```bash
 pip install pydeepskylog
 ```
 
-## Usage
+## Basic Usage
+
+Import the main modules:
 
 ```python
-import pydeepskylog as pds
-
-# Calculate contrast reserve. The object diameters are given in arc seconds.
-contrast_reserve = pds.contrast_reserve(sqm=22, telescope_diameter=457, magnification=118, magnitude=11,
-                                        surf_brightness=10.5, object_diameter1=600, object_diameter2=600)
-print(contrast_reserve)
-
-# Define a list of possible magnifications
-possible_magnifications = [50, 100, 150, 200, 250]
-
-# Calculate optimal detection magnification
-optimal_detection_magnification = pds.optimal_detection_magnification(sqm=22, telescope_diameter=457, magnitude=11,
-                                                                      object_diameter1=600, object_diameter2=600,
-                                                                      magnifications=possible_magnifications)
-print(optimal_detection_magnification)
-
-# Convert naked eye limiting magnitude to SQM value
-sqm = pds.nelm_to_sqm(5.8)
-
-# Convert SQM value to naked eye limiting magnitude
-nelm = pds.sqm_to_nelm(21.4)
-
-# Convert Bortle scale to SQM value
-print(pds.bortle_to_sqm(4))
-
-# Convert SQM value to Bortle scale
-print(pds.sqm_to_bortle(21.4))
-
-# Convert naked eye limiting magnitude to bortle scale
-print(pds.nelm_to_bortle(5.8))
-
-# Convert bortle scale to naked eye limiting magnitude
-print(pds.bortle_to_nelm(4))
-
-# Get all defined instruments of a DeepskyLog user
-print(pds.dsl_instruments('username'))
-
-# Get all defined eyepieces of a DeepskyLog user
-print(pds.dsl_eyepieces('username'))
-
-# Get all defined lenses of a DeepskyLog user
-print(pds.dsl_lenses('username'))
-
-# Get all defined filters of a DeepskyLog user
-print(pds.dsl_filters('username'))
-
-# Get a list of possible magnifications for a given telescope and the eyepieces as defined in DeepskyLog
-telescope = pds.dsl_instruments('username')[0]
-eyepieces = pds.dsl_eyepieces('username')
-print (pds.calculate_magnifications(telescope, eyepieces))
+import pydeepskylog.magnitude as mag
+import pydeepskylog.contrast_reserve as cr
 ```
+
+## Magnitude and Sky Brightness Conversions
+
+Convert NELM to SQM:
+
+```python
+sqm = mag.nelm_to_sqm(6.2)
+print(f"SQM: {sqm:.2f}")
+```
+
+Convert SQM to Bortle scale:
+
+```python
+bortle = mag.sqm_to_bortle(21.0)
+print(f"Bortle class: {bortle}")
+```
+
+## Contrast Reserve Calculation
+
+Calculate the contrast reserve for an object:
+
+```python
+reserve = cr.contrast_reserve(
+    sqm=21.0,
+    telescope_diameter=200,  # mm
+    magnification=100,
+    surf_brightness=None,
+    magnitude=10.5,
+    object_diameter1=120,  # arcsec
+    object_diameter2=60    # arcsec
+)
+print(f"Contrast reserve: {reserve:.2f}")
+```
+
+## Optimal Detection Magnification
+
+Find the best magnification for detection:
+
+```python
+magnifications = [50, 75, 100, 150, 200]
+optimal = cr.optimal_detection_magnification(
+    sqm=21.0,
+    telescope_diameter=200,
+    surf_brightness=None,
+    magnitude=10.5,
+    object_diameter1=120,
+    object_diameter2=60,
+    magnifications=magnifications
+)
+print(f"Optimal magnification: {optimal}")
+```
+
+## DeepskyLog API Integration
+
+Fetch user instruments:
+
+```python
+from pydeepskylog.deepskylog_interface import dsl_instruments
+
+instruments = dsl_instruments("your_username")
+for inst_id, inst in instruments.items():
+    print(inst["name"], inst["diameter"])
+```
+
+## Validation Utilities
+
+Validate a positive number:
+
+```python
+from pydeepskylog.validation import validate_positive
+
+validate_positive(42, "Telescope diameter")
+```
+
+## Logging Configuration
+
+Set up logging for debugging:
+
+```python
+from pydeepskylog.logging_config import configure_logging
+import logging
+
+configure_logging(logging.DEBUG)
+```
+
+## API
+
+Documentation for the API is available at [Read the Docs](https://pydeepskylog.readthedocs.io/en/latest/).
 
 ## Astronomical background
 
