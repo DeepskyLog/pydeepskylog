@@ -5,12 +5,13 @@ The following endpoints are used to retrieve user-specific astronomical equipmen
 Base URL:
 https://test.deepskylog.org/api/
 
-1. Instruments
+### Instruments
 
 - Endpoint: /api/instrument/{username}
 - Description: Returns all telescopes and observing instruments for the specified user.
 - Method: GET
 - Response:
+```JSON
 {
   "123": {
     "id": 123,
@@ -22,13 +23,15 @@ https://test.deepskylog.org/api/
   },
   ...
 }
+```
 
-1. Eyepieces
+### Eyepieces
 
 - Endpoint: /api/eyepieces/{username}
 - Description: Returns all eyepieces for the specified user.
 - Method: GET
 - Response:
+```JSON
 {
   "456": {
     "id": 456,
@@ -39,13 +42,15 @@ https://test.deepskylog.org/api/
   },
   ...
 }
+```
 
-1. Lenses
+### Lenses
 
 - Endpoint: /api/lenses/{username}
 - Description: Returns all lenses for the specified user.
 - Method: GET
 - Response:
+```JSON
 {
   "789": {
     "id": 789,
@@ -55,13 +60,15 @@ https://test.deepskylog.org/api/
   },
   ...
 }
+```
 
-1. Filters
+### Filters
 
 - Endpoint: /api/filters/{username}
 - Description: Returns all filters for the specified user.
 - Method: GET
 - Response:
+```JSON
 {
   "321": {
     "id": 321,
@@ -71,14 +78,20 @@ https://test.deepskylog.org/api/
   },
   ...
 }
+```
 
 ### Error Responses
 - 401/403 Unauthorized:
+```JSON
 { "error": "Authentication failed for user 'username'" }
+```
 - 500 Server Error:
+```JSON
 { "error": "Internal server error" }
+```
 - Malformed Data:
+```JSON
 { "error": "Malformed data for {resource}" }
-
+```
 Note:
 All endpoints return a dictionary mapping resource IDs to their details. If no data is found, an empty dictionary is returned. For more details, see the docstrings in pydeepskylog/deepskylog_interface.py.

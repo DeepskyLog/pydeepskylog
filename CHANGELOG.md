@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Unit tests for all public methods to ensure reliability.
 - Continuous integration setup for automated testing.
 - Refactoring of the package structure for better organization.
+- Documentation for API endpoints and expected responses.
 
 ### Changed
 - (Describe any changes here)
