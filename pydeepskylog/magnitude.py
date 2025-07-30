@@ -8,17 +8,28 @@ logger: logging = logging.getLogger(__name__)
 
 def nelm_to_sqm(nelm: float, fst_offset:float=0.0) -> float:
     """
-    Calculate the SQM value from the NELM (Naked Eye Limiting Magnitude) value. In these calculations, the NELM value is
-    maximum 6.7.
+    Convert Naked Eye Limiting Magnitude (NELM) to Sky Quality Meter (SQM) value.
 
-    Formula:
+    This function estimates the sky brightness (SQM, in magnitudes per square arcsecond) from the limiting magnitude
+    visible to the naked eye (NELM), optionally applying an observer-specific offset. The calculation is based on
+    established astronomical formulas and is valid for NELM values up to 6.7.
+
+    The formula used is:
         SQM = 21.58 - 5 * log10(10^(1.586 - (NELM + fst_offset)/5) - 1)
-    This formula estimates the sky brightness (SQM) from the limiting magnitude visible to the naked eye.
 
-    :param nelm: The Naked Eye Limiting Magnitude
-    :param fst_offset: The offset between the real Nelm and the Nelm for the observer
+    Args:
+        nelm (float): Naked Eye Limiting Magnitude (maximum faintness visible to the naked eye).
+        fst_offset (float, optional): Observer-specific offset to adjust the NELM value. Defaults to 0.0.
 
-    :return: The SQM value
+    Returns:
+        float: Estimated SQM value (sky brightness in mag/arcsec²), capped at 22.0.
+
+    Raises:
+        InvalidParameterError: If input values are out of range or result in invalid calculations.
+
+    Example:
+        >>> sqm = nelm_to_sqm(6.2)
+        >>> print(sqm)
     """
     validate_number(fst_offset, "fst_offset", allow_none=False)
     validate_number(nelm, "nelm", allow_none=False)
@@ -39,13 +50,24 @@ def nelm_to_sqm(nelm: float, fst_offset:float=0.0) -> float:
 
 def nelm_to_bortle(nelm: float) -> int:
     """
-    Calculate the Bortle scale value from the NELM (Naked Eye Limiting Magnitude) value. In these calculations, the NELM
-    value is maximum 6.7.
+    Convert Naked Eye Limiting Magnitude (NELM) to the Bortle scale value.
 
-    The Bortle scale is mapped from NELM using threshold values based on observational standards.
+    This function maps the limiting magnitude visible to the naked eye (NELM) to the corresponding Bortle scale class,
+    which is a qualitative measure of night sky darkness. The mapping uses established threshold values based on
+    observational standards and is valid for NELM values up to 6.7.
 
-    :param nelm: The Naked Eye Limiting Magnitude
-    :return: The Bortle scale value (1 - 9)
+    Args:
+        nelm (float): Naked Eye Limiting Magnitude (maximum faintness visible to the naked eye).
+
+    Returns:
+        int: The Bortle scale value (1 to 9), where 1 indicates the darkest skies and 9 the brightest.
+
+    Raises:
+        InvalidParameterError: If the NELM value is out of the valid range (0 to 6.7).
+
+    Example:
+        >>> bortle = nelm_to_bortle(6.2)
+        >>> print(bortle)
     """
     validate_in_range(nelm, "NELM", 0, 6.7)
 
@@ -71,12 +93,24 @@ def nelm_to_bortle(nelm: float) -> int:
 
 def sqm_to_bortle(sqm: float) -> int:
     """
-    Calculate the Bortle scale value from the SQM (Sky Quality Meter) value.
+    Convert Sky Quality Meter (SQM) value to the Bortle scale class.
 
-    The Bortle scale is mapped from SQM using threshold values based on observational standards.
+    This function maps the measured sky brightness (SQM, in magnitudes per square arcsecond) to the corresponding
+    Bortle scale value, which qualitatively describes night sky darkness. The mapping uses established threshold
+    values based on observational standards and is valid for SQM values up to 22.
 
-    :param sqm: The Sky Quality Meter value
-    :return: The Bortle scale value (1 - 9)
+    Args:
+        sqm (float): Sky Quality Meter value (sky brightness in mag/arcsec²).
+
+    Returns:
+        int: The Bortle scale value (1 to 9), where 1 indicates the darkest skies and 9 the brightest.
+
+    Raises:
+        InvalidParameterError: If the SQM value is out of the valid range (0 to 22).
+
+    Example:
+        >>> bortle = sqm_to_bortle(21.0)
+        >>> print(bortle)
     """
     validate_in_range(sqm, "SQM", 0, 22)
 
@@ -102,15 +136,28 @@ def sqm_to_bortle(sqm: float) -> int:
 
 def sqm_to_nelm(sqm: float, fst_offset: float=0.0) -> float:
     """
-    Calculate the Naked Eye Limiting Magnitude from the SQM (Sky Quality Meter) value.
+    Convert Sky Quality Meter (SQM) value to Naked Eye Limiting Magnitude (NELM).
 
-    Formula:
+    This function estimates the faintest star visible to the naked eye (NELM) from the measured sky brightness (SQM),
+    optionally applying an observer-specific offset. The calculation is based on established astronomical formulas
+    and is valid for SQM values up to 22.
+
+    The formula used is:
         NELM = 7.93 - 5 * log10(1 + 10^(4.316 - SQM/5))
-    This formula estimates the faintest star visible to the naked eye from the measured sky brightness.
 
-    :param sqm: The SQM value
-    :param fst_offset: The offset between the real Nelm and the Nelm for the observer
-    :return: The Naked Eye Limiting Magnitude
+    Args:
+        sqm (float): Sky Quality Meter value (sky brightness in mag/arcsec²).
+        fst_offset (float, optional): Observer-specific offset to adjust the NELM value. Defaults to 0.0.
+
+    Returns:
+        float: Estimated NELM value (maximum faintness visible to the naked eye).
+
+    Raises:
+        InvalidParameterError: If input values are out of range or result in invalid calculations.
+
+    Example:
+        >>> nelm = sqm_to_nelm(21.0)
+        >>> print(nelm)
     """
     validate_in_range(sqm, "SQM", 0, 22)
     validate_number(fst_offset, "fst_offset", allow_none=False)
@@ -130,13 +177,25 @@ def sqm_to_nelm(sqm: float, fst_offset: float=0.0) -> float:
 
 def bortle_to_nelm(bortle: int, fst_offset: float=0.0) -> float:
     """
-    Calculate the NELM value if the bortle scale is given.
+    Convert Bortle scale value to Naked Eye Limiting Magnitude (NELM).
 
-    Uses a lookup table to map Bortle scale values to typical NELM values.
+    This function maps a given Bortle scale class (a qualitative measure of night sky darkness)
+    to a typical Naked Eye Limiting Magnitude (NELM) value, optionally applying an observer-specific offset.
+    The mapping uses a lookup table based on observational standards.
 
-    :param bortle: The bortle scale
-    :param fst_offset: The offset between the real Nelm and the Nelm for the observer
-    :return: The NELM value
+    Args:
+        bortle (int): The Bortle scale value (1 to 9), where 1 indicates the darkest skies and 9 the brightest.
+        fst_offset (float, optional): Observer-specific offset to adjust the NELM value. Defaults to 0.0.
+
+    Returns:
+        float: Estimated NELM value (maximum faintness visible to the naked eye).
+
+    Raises:
+        InvalidParameterError: If the Bortle value is out of the valid range (1 to 9) or if parameters are invalid.
+
+    Example:
+        >>> nelm = bortle_to_nelm(4)
+        >>> print(nelm)
     """
     validate_in_range(bortle, "Bortle", 1, 9)
     validate_number(fst_offset, "fst_offset", allow_none=False)
@@ -159,12 +218,24 @@ def bortle_to_nelm(bortle: int, fst_offset: float=0.0) -> float:
 
 def bortle_to_sqm(bortle: int) -> float:
     """
-    Calculate the SQM value if the bortle scale is given.
+    Convert Bortle scale value to Sky Quality Meter (SQM) value.
 
-    Uses a lookup table to map Bortle scale values to typical NELM values.
+    This function maps a given Bortle scale class (a qualitative measure of night sky darkness)
+    to a typical Sky Quality Meter (SQM) value, representing sky brightness in magnitudes per square arcsecond.
+    The mapping uses a lookup table based on observational standards.
 
-    :param bortle: The bortle scale
-    :return: The SQM value
+    Args:
+        bortle (int): The Bortle scale value (1 to 9), where 1 indicates the darkest skies and 9 the brightest.
+
+    Returns:
+        float: Estimated SQM value (sky brightness in mag/arcsec²).
+
+    Raises:
+        InvalidParameterError: If the Bortle value is out of the valid range (1 to 9).
+
+    Example:
+        >>> sqm = bortle_to_sqm(4)
+        >>> print(sqm)
     """
     validate_in_range(bortle, "bortle", 1, 9)
 
