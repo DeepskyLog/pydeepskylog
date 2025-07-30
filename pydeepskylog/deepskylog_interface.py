@@ -149,5 +149,20 @@ def _dsl_api_call(api_call: str, username: str) -> dict:
         dict: The response from the API call, parsed as a JSON dictionary.
     """
     api_url = "https://test.deepskylog.org/api/" + api_call + "/" + username
-    response = requests.get(api_url)
-    return response.json()
+    try:
+        response = requests.get(api_url, timeout=10)
+        if response.status_code in (401, 403):
+            raise PermissionError(f"Authentication failed for user '{username}' (status {response.status_code})")
+        response.raise_for_status()
+        try:
+            return response.json()
+        except ValueError:
+            raise RuntimeError("Failed to decode JSON response from DeepskyLog API")
+    except requests.exceptions.ConnectionError:
+        raise ConnectionError("Failed to connect to DeepskyLog API server")
+    except requests.exceptions.Timeout:
+        raise ConnectionError("Request to DeepskyLog API timed out")
+    except requests.exceptions.HTTPError as e:
+        raise RuntimeError(f"HTTP error occurred: {e}")
+    except requests.exceptions.RequestException as e:
+        raise RuntimeError(f"An error occurred during the API request: {e}")
