@@ -1,6 +1,11 @@
 import requests
+import time
 
 DSL_API_BASE_URL = "https://test.deepskylog.org/api/"  # Change this as needed
+
+# Simple in-memory cache: {url: (timestamp, data)}
+_DSL_API_CACHE = {}
+_DSL_API_CACHE_TTL = 300  # seconds (5 minutes)
 
 def dsl_instruments(username: str) -> dict:
     """
@@ -151,6 +156,15 @@ def _dsl_api_call(api_call: str, username: str) -> dict:
         dict: The response from the API call, parsed as a JSON dictionary.
     """
     api_url = f"{DSL_API_BASE_URL}{api_call}/{username}"
+    now = time.time()
+
+    # Check cache
+    cache_entry = _DSL_API_CACHE.get(api_url)
+    if cache_entry:
+        timestamp, data = cache_entry
+        if now - timestamp < _DSL_API_CACHE_TTL:
+            return data
+
     try:
         response = requests.get(api_url, timeout=10)
         if response.status_code in (401, 403):
@@ -164,16 +178,6 @@ def _dsl_api_call(api_call: str, username: str) -> dict:
         if not isinstance(data, (dict, list)):
             raise RuntimeError("Unexpected JSON structure: expected dict or list")
 
-        # Example transformation: if data is a list, convert to dict with IDs as keys if possible
-        if isinstance(data, list):
-            # Try to use 'id' or 'ID' as key if present
-            if data and isinstance(data[0], dict) and ('id' in data[0] or 'ID' in data[0]):
-                key_name = 'id' if 'id' in data[0] else 'ID'
-                data = {str(item[key_name]): item for item in data if key_name in item}
-            else:
-                # Otherwise, return as-is
-                pass
-
         # Further validation: check for required fields based on api_call
         if api_call in ("instrument", "eyepieces", "lenses", "filters"):
             if not data:
@@ -182,7 +186,8 @@ def _dsl_api_call(api_call: str, username: str) -> dict:
             sample = next(iter(data.values()), None) if isinstance(data, dict) else data[0]
             if not isinstance(sample, dict):
                 raise RuntimeError(f"Malformed data for {api_call}: expected dict entries")
-
+        # Store in cache
+        _DSL_API_CACHE[api_url] = (now, data)
         return data
 
     except requests.exceptions.ConnectionError:
