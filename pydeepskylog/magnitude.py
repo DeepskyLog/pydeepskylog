@@ -1,4 +1,8 @@
 import math
+import logging
+from pydeepskylog.exceptions import InvalidParameterError
+
+logger: logging = logging.getLogger(__name__)
 
 
 def nelm_to_sqm(nelm: float, fst_offset:float=0.0) -> float:
@@ -16,19 +20,24 @@ def nelm_to_sqm(nelm: float, fst_offset:float=0.0) -> float:
     :return: The SQM value
     """
     if not isinstance(nelm, (int, float)):
-        raise ValueError("NELM must be a number")
+        logger.error("nelm must be an int or float")
+        raise InvalidParameterError("NELM must be a number")
     if not isinstance(fst_offset, (int, float)):
-        raise ValueError("fst_offset must be a number")
+        logger.error("fst_offset must be an int or float")
+        raise InvalidParameterError("fst_offset must be a number")
     if nelm + fst_offset < 0 or nelm + fst_offset > 6.7:
-        raise ValueError("NELM must be between 0 and 6.7")
+        logger.error("NELM must be between 0 and 6.7")
+        raise InvalidParameterError("NELM must be between 0 and 6.7")
     try:
         exponent = 1.586 - (nelm + fst_offset) / 5.0
         base = math.pow(10, exponent) - 1.0
         if base <= 0:
-            raise ValueError("Invalid calculation: log10 argument must be positive")
+            logger.error("Invalid calculation: log10 argument must be positive")
+            raise InvalidParameterError("Invalid calculation: log10 argument must be positive")
         sqm = 21.58 - 5 * math.log10(base)
-    except (ValueError, OverflowError) as e:
-        raise ValueError(f"Error in SQM calculation: {e}")
+    except (InvalidParameterError, OverflowError) as e:
+        logger.error(f"Error in SQM calculation: {e}")
+        raise InvalidParameterError(f"Error in SQM calculation: {e}")
     return min(sqm, 22.0)
 
 
@@ -43,10 +52,12 @@ def nelm_to_bortle(nelm: float) -> int:
     :return: The Bortle scale value (1 - 9)
     """
     if not isinstance(nelm, (int, float)):
-        raise ValueError("NELM must be a number")
+        logger.error("NELM must be an int or float")
+        raise InvalidParameterError("NELM must be a number")
 
     if nelm < 0 or nelm > 6.7:
-        raise ValueError("NELM must be between 0 and 6.7")
+        logger.error("NELM must be between 0 and 6.7")
+        raise InvalidParameterError("NELM must be between 0 and 6.7")
     if nelm < 3.6:
         return 9
     elif nelm < 3.9:
@@ -77,9 +88,11 @@ def sqm_to_bortle(sqm: float) -> int:
     :return: The Bortle scale value (1 - 9)
     """
     if not isinstance(sqm, (int, float)):
-        raise ValueError("SQM must be a number")
+        logger.error("SQM must be an int or float")
+        raise InvalidParameterError("SQM must be a number")
     if sqm < 0 or sqm > 22:
-        raise ValueError("SQM must be between 0 and 22")
+        logger.error("SQM must be between 0 and 22")
+        raise InvalidParameterError("SQM must be between 0 and 22")
     if sqm <= 17.5:
         return 9
     elif sqm <= 18.0:
@@ -113,18 +126,22 @@ def sqm_to_nelm(sqm: float, fst_offset: float=0.0) -> float:
     :return: The Naked Eye Limiting Magnitude
     """
     if not isinstance(sqm, (int, float)):
-        raise ValueError("SQM must be a number")
+        logger.error("SQM must be an int or float")
+        raise InvalidParameterError("SQM must be a number")
     if not isinstance(fst_offset, (int, float)):
-        raise ValueError("fst_offset must be a number")
+        logger.error("fst_offset must be an int or float")
+        raise InvalidParameterError("fst_offset must be a number")
     if sqm < 0 or sqm > 22:
-        raise ValueError("SQM must be between 0 and 22")
+        logger.error("SQM must be between 0 and 22")
+        raise InvalidParameterError("SQM must be between 0 and 22")
     try:
         base = 1 + math.pow(10, 4.316 - sqm / 5.0)
         if base <= 0:
-            raise ValueError("Invalid calculation: log10 argument must be positive")
+            raise InvalidParameterError("Invalid calculation: log10 argument must be positive")
         nelm = 7.93 - 5 * math.log10(base)
-    except (ValueError, OverflowError) as e:
-        raise ValueError(f"Error in NELM calculation: {e}")
+    except (InvalidParameterError, OverflowError) as e:
+        logger.error(f"Error in NELM calculation: {e}")
+        raise InvalidParameterError(f"Error in NELM calculation: {e}")
     if nelm < 2.5:
         nelm = 2.5
     return nelm - fst_offset
@@ -141,11 +158,14 @@ def bortle_to_nelm(bortle: int, fst_offset: float=0.0) -> float:
     :return: The NELM value
     """
     if not isinstance(bortle, int):
-        raise ValueError("Bortle must be an integer")
+        logger.error("bortle must be an int or float")
+        raise InvalidParameterError("Bortle must be an integer")
     if not 1 <= bortle <= 9:
-        raise ValueError("Bortle must be between 1 and 9")
+        logger.error("bortle must be between 1 and 9")
+        raise InvalidParameterError("Bortle must be between 1 and 9")
     if not isinstance(fst_offset, (int, float)):
-        raise ValueError("fst_offset must be a number")
+        logger.error("fst_offset must be an int or float")
+        raise InvalidParameterError("fst_offset must be a number")
     # Lookup dictionary mapping Bortle scale to NELM values
     bortle_nelm_map = {
         1: 6.6,
@@ -172,9 +192,11 @@ def bortle_to_sqm(bortle: int) -> float:
     :return: The SQM value
     """
     if not isinstance(bortle, int):
-        raise ValueError("Bortle must be an integer")
+        logger.error("bortle must be an int or float")
+        raise InvalidParameterError("Bortle must be an integer")
     if not 1 <= bortle <= 9:
-        raise ValueError("Bortle must be between 1 and 9")
+        logger.error("bortle must be between 1 and 9")
+        raise InvalidParameterError("Bortle must be between 1 and 9")
     # Lookup dictionary mapping Bortle scale to SQM values
     bortle_sqm_map = {
         1: 21.85,

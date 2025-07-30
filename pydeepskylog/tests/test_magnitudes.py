@@ -1,6 +1,7 @@
 import unittest
 import math
 import pydeepskylog as pds
+from pydeepskylog.exceptions import InvalidParameterError
 
 
 class TestMagnitude(unittest.TestCase):
@@ -53,14 +54,14 @@ class TestMagnitude(unittest.TestCase):
 
     def test_nelm_to_sqm_invalid(self):
         # Out of range
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidParameterError):
             pds.nelm_to_sqm(-1)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidParameterError):
             pds.nelm_to_sqm(7)
         # Wrong type
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidParameterError):
             pds.nelm_to_sqm("bad")
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidParameterError):
             pds.nelm_to_sqm(5.0, "bad")
 
     def test_nelm_to_bortle_valid(self):
@@ -76,11 +77,11 @@ class TestMagnitude(unittest.TestCase):
         self.assertEqual(pds.nelm_to_bortle(3.0), 9)
 
     def test_nelm_to_bortle_invalid(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidParameterError):
             pds.nelm_to_bortle(-1)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidParameterError):
             pds.nelm_to_bortle(7)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidParameterError):
             pds.nelm_to_bortle("bad")
 
     def test_sqm_to_bortle_valid(self):
@@ -96,11 +97,11 @@ class TestMagnitude(unittest.TestCase):
         self.assertEqual(pds.sqm_to_bortle(0.0), 9)
 
     def test_sqm_to_bortle_invalid(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidParameterError):
             pds.sqm_to_bortle(-1)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidParameterError):
             pds.sqm_to_bortle(23)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidParameterError):
             pds.sqm_to_bortle("bad")
 
     def test_sqm_to_nelm_valid(self):
@@ -111,13 +112,13 @@ class TestMagnitude(unittest.TestCase):
         self.assertAlmostEqual(pds.sqm_to_nelm(21.94, 1.0), 5.6, delta=0.01)
 
     def test_sqm_to_nelm_invalid(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidParameterError):
             pds.sqm_to_nelm(-1)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidParameterError):
             pds.sqm_to_nelm(23)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidParameterError):
             pds.sqm_to_nelm("bad")
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidParameterError):
             pds.sqm_to_nelm(21.0, "bad")
 
     def test_bortle_to_nelm_valid(self):
@@ -127,13 +128,13 @@ class TestMagnitude(unittest.TestCase):
             self.assertEqual(pds.bortle_to_nelm(bortle, 1.0), nelm - 1.0)
 
     def test_bortle_to_nelm_invalid(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidParameterError):
             pds.bortle_to_nelm(0)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidParameterError):
             pds.bortle_to_nelm(10)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidParameterError):
             pds.bortle_to_nelm("bad")
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidParameterError):
             pds.bortle_to_nelm(5, "bad")
 
     def test_bortle_to_sqm_valid(self):
@@ -142,11 +143,11 @@ class TestMagnitude(unittest.TestCase):
             self.assertEqual(pds.bortle_to_sqm(bortle), sqm)
 
     def test_bortle_to_sqm_invalid(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidParameterError):
             pds.bortle_to_sqm(0)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidParameterError):
             pds.bortle_to_sqm(10)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidParameterError):
             pds.bortle_to_sqm("bad")
 
     def test_nelm_to_sqm_and_back(self):
@@ -174,7 +175,7 @@ class TestMagnitude(unittest.TestCase):
     def test_bortle_to_nelm_invalid(self):
         """Test the bortle_to_nelm function with invalid Bortle values."""
         for invalid_bortle in [0, 10]:
-            with self.assertRaises(ValueError):
+            with self.assertRaises(InvalidParameterError):
                 nelm = pds.bortle_to_nelm(invalid_bortle)
 
     def test_bortle_to_sqm(self):
@@ -187,7 +188,7 @@ class TestMagnitude(unittest.TestCase):
     def test_bortle_to_sqm_invalid(self):
         """Test the bortle_to_sqm function with invalid Bortle values."""
         for invalid_bortle in [0, 10]:
-            with self.assertRaises(ValueError):
+            with self.assertRaises(InvalidParameterError):
                 sqm = pds.bortle_to_sqm(invalid_bortle)
 
     def test_bortle_to_nelm_specific_values(self):

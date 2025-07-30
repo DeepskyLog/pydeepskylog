@@ -1,7 +1,10 @@
+import logging
 import requests
 import time
 from typing import Dict, List, Any, Optional
-
+from pydeepskylog.exceptions import (
+    APIConnectionError, APITimeoutError, APIAuthenticationError, APIResponseError, InvalidParameterError
+)
 DSL_API_BASE_URL: str = "https://test.deepskylog.org/api/"  # Change this as needed
 
 # Simple in-memory cache: {url: (timestamp, data)}
@@ -158,6 +161,7 @@ def _dsl_api_call(api_call: str, username: str) -> Dict[str, Any]:
     """
     api_url: str = f"{DSL_API_BASE_URL}{api_call}/{username}"
     now: float = time.time()
+    logger: logging = logging.getLogger(__name__)
 
     # Check cache
     cache_entry = _DSL_API_CACHE.get(api_url)
@@ -169,33 +173,42 @@ def _dsl_api_call(api_call: str, username: str) -> Dict[str, Any]:
     try:
         response = requests.get(api_url, timeout=10)
         if response.status_code in (401, 403):
-            raise PermissionError(f"Authentication failed for user '{username}' (status {response.status_code})")
+            logger.error(f"Authentication failed for user '{username}' (status {response.status_code})")
+            raise APIAuthenticationError(f"Authentication failed for user '{username}' (status {response.status_code})")
         response.raise_for_status()
         try:
             data = response.json()
         except ValueError:
-            raise RuntimeError("Failed to decode JSON response from DeepskyLog API")
+            logger.error("Failed to decode JSON response from DeepskyLog API")
+            raise APIResponseError("Failed to decode JSON response from DeepskyLog API")
         # Validate that the response is a dict or list
         if not isinstance(data, (dict, list)):
-            raise RuntimeError("Unexpected JSON structure: expected dict or list")
+            logger.error("Unexpected JSON structure: expected dict or list")
+            raise APIResponseError("Unexpected JSON structure: expected dict or list")
 
         # Further validation: check for required fields based on api_call
         if api_call in ("instrument", "eyepieces", "lenses", "filters"):
             if not data:
-                raise RuntimeError(f"No data returned for {api_call}")
+                logger.error(f"No data returned for {api_call}")
+                raise APIResponseError(f"No data returned for {api_call}")
             # Optionally, check for expected keys in the first item
             sample = next(iter(data.values()), None) if isinstance(data, dict) else data[0]
             if not isinstance(sample, dict):
-                raise RuntimeError(f"Malformed data for {api_call}: expected dict entries")
+                logger.error(f"Malformed data for {api_call}: expected dict entries")
+                raise APIResponseError(f"Malformed data for {api_call}: expected dict entries")
         # Store in cache
         _DSL_API_CACHE[api_url] = (now, data)
         return data
 
     except requests.exceptions.ConnectionError:
-        raise ConnectionError("Failed to connect to DeepskyLog API server")
+        logger.error("Failed to connect to DeepskyLog API server")
+        raise APIConnectionError("Failed to connect to DeepskyLog API server")
     except requests.exceptions.Timeout:
-        raise ConnectionError("Request to DeepskyLog API timed out")
+        logger.error("Request to DeepskyLog API timed out")
+        raise APITimeoutError("Request to DeepskyLog API timed out")
     except requests.exceptions.HTTPError as e:
-        raise RuntimeError(f"HTTP error occurred: {e}")
+        logger.error(f"HTTP error occurred: {e}")
+        raise APIResponseError(f"HTTP error occurred: {e}")
     except requests.exceptions.RequestException as e:
-        raise RuntimeError(f"An error occurred during the API request: {e}")
+        logger.error(f"An error occurred during the API request: {e}")
+        raise APIResponseError(f"An error occurred during the API request: {e}")

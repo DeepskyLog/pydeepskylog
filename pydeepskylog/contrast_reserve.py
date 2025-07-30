@@ -2,7 +2,7 @@ import logging
 import math
 from typing import Optional, Tuple, List
 from pydeepskylog.config import ContrastReserveConfig
-
+from pydeepskylog.exceptions import InvalidParameterError
 
 def surface_brightness(magnitude: float, object_diameter1: float, object_diameter2: float) -> float:
     """
@@ -11,21 +11,28 @@ def surface_brightness(magnitude: float, object_diameter1: float, object_diamete
     :param object_diameter1: The diameter along the major axis of the object in arc seconds
     :param object_diameter2: The diameter along the minor axis of the object in arc seconds
     :return: The surface brightness of the object in magnitudes per square arc second
-    :raises ValueError: If any parameter is not a number or if object diameters are not positive
+    :raises InvalidParameterError: If any parameter is not a number or if object diameters are not positive
     """
     # Validate inputs
+    logger: logging = logging.getLogger(__name__)
+
     if not isinstance(magnitude, (int, float)):
-        raise ValueError("Magnitude must be a number")
+        logger.error(f"The magnitude parameter is not a number")
+        raise InvalidParameterError("Magnitude must be a number")
     if not isinstance(object_diameter1, (int, float)):
-        raise ValueError("Object diameter 1 must be a number")
+        logger.error(f"The object diameter 1 parameter is not a number")
+        raise InvalidParameterError("Object diameter 1 must be a number")
     if not isinstance(object_diameter2, (int, float)):
-        raise ValueError("Object diameter 2 must be a number")
+        logger.error(f"The object diameter 2 parameter is not a number")
+        raise InvalidParameterError("Object diameter 2 must be a number")
     
     # Check for positive diameters
     if object_diameter1 <= 0:
-        raise ValueError("Object diameter 1 must be positive")
+        logger.error(f"The object diameter 1 parameter is not positive: {object_diameter1}")
+        raise InvalidParameterError("Object diameter 1 must be positive")
     if object_diameter2 <= 0:
-        raise ValueError("Object diameter 2 must be positive")
+        logger.error(f"The object diameter 2 parameter is not positive: {object_diameter2}")
+        raise InvalidParameterError("Object diameter 2 must be positive")
         
     return magnitude + (2.5 * math.log10(2827.0 * (object_diameter1 / 60) * (object_diameter2 / 60)))
 
@@ -45,42 +52,55 @@ def validate_contrast_reserve_inputs(
     :param magnitude: The magnitude of the object to observe
     :param object_diameter1: The diameter along the major axis of the object in arc seconds
     :param object_diameter2: The diameter along the minor axis of the object in arc seconds
-    :raises ValueError: If parameters have invalid types or values
+    :raises InvalidParameterError: If parameters have invalid types or values
     """
     # Validate required numeric inputs
+    logger: logging = logging.getLogger(__name__)
+
     if not isinstance(sqm, (int, float)):
-        raise ValueError("SQM must be a number")
+        logger.error(f"The sqm parameter is not a number")
+        raise InvalidParameterError("SQM must be a number")
     if not isinstance(telescope_diameter, (int, float)):
-        raise ValueError("Telescope diameter must be a number")
+        logger.error(f"The telescope diameter parameter is not a number")
+        raise InvalidParameterError("Telescope diameter must be a number")
     if not isinstance(magnification, (int, float)):
-        raise ValueError("Magnification must be a number")
+        logger.error(f"The magnification parameter is not a number")
+        raise InvalidParameterError("Magnification must be a number")
     
     # Check for positive values
     if telescope_diameter <= 0:
-        raise ValueError("Telescope diameter must be positive")
+        logger.error(f"The telescope diameter parameter is not positive: {telescope_diameter}")
+        raise InvalidParameterError("Telescope diameter must be positive")
     if magnification <= 0:
-        raise ValueError("Magnification must be positive")
+        logger.error(f"The magnification parameter is not positive: {magnification}")
+        raise InvalidParameterError("Magnification must be positive")
         
     # Validate surf_brightness if provided
     if surf_brightness is not None and not isinstance(surf_brightness, (int, float)):
-        raise ValueError("Surface brightness must be a number or None")
+        logger.error(f"The surface brightness parameter is not a number: {surf_brightness}")
+        raise InvalidParameterError("Surface brightness must be a number or None")
         
     # Validate magnitude if provided and needed
     if surf_brightness is None and magnitude is not None:
         if not isinstance(magnitude, (int, float)):
-            raise ValueError("Magnitude must be a number or None")
+            logger.error(f"The magnitude parameter is not a number: {magnitude}")
+            raise InvalidParameterError("Magnitude must be a number or None")
             
     # Validate object diameters if provided
     if object_diameter1 is not None and not isinstance(object_diameter1, (int, float)):
-        raise ValueError("Object diameter 1 must be a number or None")
+        logger.error(f"The object diameter parameter is not a number: {object_diameter1}")
+        raise InvalidParameterError("Object diameter 1 must be a number or None")
     if object_diameter2 is not None and not isinstance(object_diameter2, (int, float)):
-        raise ValueError("Object diameter 2 must be a number or None")
+        logger.error(f"The object diameter parameter is not a number: {object_diameter2}")
+        raise InvalidParameterError("Object diameter 2 must be a number or None")
         
     # Check for positive diameters if provided
     if object_diameter1 is not None and object_diameter1 <= 0:
-        raise ValueError("Object diameter 1 must be positive")
+        logger.error(f"The object diameter 1 parameter is not positive: {object_diameter1}")
+        raise InvalidParameterError("Object diameter 1 must be positive")
     if object_diameter2 is not None and object_diameter2 <= 0:
-        raise ValueError("Object diameter 2 must be positive")
+        logger.error(f"The object diameter 2 parameter is not positive: {object_diameter2}")
+        raise InvalidParameterError("Object diameter 2 must be positive")
 
 
 def calculate_initial_parameters(
@@ -96,8 +116,8 @@ def calculate_initial_parameters(
     :param object_diameter2: The diameter along the minor axis of the object in arc seconds
     :return: A tuple containing (aperture_in_inches, sbb1, object_diameter1_in_arc_minutes, object_diameter2_in_arc_minutes)
     """
-    logger = logging.getLogger()
-    
+    logger: logging = logging.getLogger(__name__)
+
     aperture_in_inches = telescope_diameter / 25.4
     
     # Minimum useful magnification
@@ -106,7 +126,7 @@ def calculate_initial_parameters(
     if object_diameter1 is None or object_diameter2 is None:
         # If the object diameters are not given, we cannot calculate the contrast reserve
         logger.error("Cannot calculate contrast reserve, missing object diameters")
-        raise ValueError("Object diameters must be provided to calculate contrast reserve")
+        raise InvalidParameterError("Object diameters must be provided to calculate contrast reserve")
 
     object_diameter1_in_arc_minutes = object_diameter1 / 60.0
     object_diameter2_in_arc_minutes = object_diameter2 / 60.0
@@ -133,8 +153,8 @@ def calculate_log_object_contrast(
     :param object_diameter2: The diameter along the minor axis of the object in arc seconds
     :return: The log object contrast
     """
-    logger = logging.getLogger()
-    
+    logger: logging = logging.getLogger(__name__)
+
     if surf_brightness:
         # If the surface brightness is given, use it to calculate the log object contrast
         # Convert surf_brightness to magnitudes per square arc second
@@ -144,7 +164,7 @@ def calculate_log_object_contrast(
         if magnitude is None:
             # If not, we cannot calculate the log object contrast
             logger.error("Cannot calculate log object contrast, missing parameters")
-            raise ValueError("Magnitude must be provided if surface brightness is not given")
+            raise InvalidParameterError("Magnitude must be provided if surface brightness is not given")
         log_object_contrast = -0.4 * (surface_brightness(magnitude, object_diameter1, object_diameter2) - sqm)
             
     return log_object_contrast
@@ -259,10 +279,10 @@ def contrast_reserve(
     :param object_diameter2: The diameter along the minor axis of the object in arc seconds
 
     :return: The contrast reserve of the object
-    :raises ValueError: If parameters have invalid types or values
+    :raises InvalidParameterError: If parameters have invalid types or values
     """
     # Log a string using python logger
-    logger = logging.getLogger()
+    logger: logging = logging.getLogger(__name__)
     logger.info("Calculating the contrast reserve")
     
     # Validate inputs
@@ -276,8 +296,7 @@ def contrast_reserve(
         aperture_in_inches, sbb1, object_diameter1_in_arc_minutes, object_diameter2_in_arc_minutes = calculate_initial_parameters(
             sqm, telescope_diameter, object_diameter1, object_diameter2
         )
-    except ValueError as e:
-        logger.error(str(e))
+    except InvalidParameterError as e:
         raise
 
     # Calculate log object contrast
@@ -318,46 +337,60 @@ def optimal_detection_magnification(
     :raises ValueError: If parameters have invalid types or values
     """
     # Validate required numeric inputs
+    logger: logging = logging.getLogger(__name__)
+
     if not isinstance(sqm, (int, float)):
-        raise ValueError("SQM must be a number")
+        logger.error(f"The sqm parameter is not a number: {sqm}")
+        raise InvalidParameterError("SQM must be a number")
     if not isinstance(telescope_diameter, (int, float)):
-        raise ValueError("Telescope diameter must be a number")
+        logger.error(f"The telescope diameter parameter is not a number: {telescope_diameter}")
+        raise InvalidParameterError("Telescope diameter must be a number")
     
     # Check for positive telescope diameter
     if telescope_diameter <= 0:
-        raise ValueError("Telescope diameter must be positive")
+        logger.error(f"The telescope diameter parameter is not positive: {telescope_diameter}")
+        raise InvalidParameterError("Telescope diameter must be positive")
         
     # Validate surf_brightness if provided
     if surf_brightness is not None and not isinstance(surf_brightness, (int, float)):
-        raise ValueError("Surface brightness must be a number or None")
+        logger.error(f"The surface brightness parameter is not a number: {surf_brightness}")
+        raise InvalidParameterError("Surface brightness must be a number or None")
         
     # Validate magnitude if provided and needed
     if surf_brightness is None and magnitude is not None:
         if not isinstance(magnitude, (int, float)):
-            raise ValueError("Magnitude must be a number or None")
+            logger.error(f"The magnitude parameter is not a number: {magnitude}")
+            raise InvalidParameterError("Magnitude must be a number or None")
             
     # Validate object diameters if provided
     if object_diameter1 is not None and not isinstance(object_diameter1, (int, float)):
-        raise ValueError("Object diameter 1 must be a number or None")
+        logger.error(f"The object diameter 1 parameter is not a number: {object_diameter1}")
+        raise InvalidParameterError("Object diameter 1 must be a number or None")
     if object_diameter2 is not None and not isinstance(object_diameter2, (int, float)):
-        raise ValueError("Object diameter 2 must be a number or None")
+        logger.error(f"The object diameter 2 parameter is not a number: {object_diameter2}")
+        raise InvalidParameterError("Object diameter 2 must be a number or None")
         
     # Check for positive diameters if provided
     if object_diameter1 is not None and object_diameter1 <= 0:
-        raise ValueError("Object diameter 1 must be positive")
+        logger.error(f"The object diameter 1 parameter is not positive: {object_diameter1}")
+        raise InvalidParameterError("Object diameter 1 must be positive")
     if object_diameter2 is not None and object_diameter2 <= 0:
-        raise ValueError("Object diameter 2 must be positive")
+        logger.error(f"The object diameter 2 parameter is not positive: {object_diameter2}")
+        raise InvalidParameterError("Object diameter 2 must be positive")
         
     # Validate magnifications list
     if not isinstance(magnifications, list):
-        raise ValueError("Magnifications must be a list")
+        logger.error("Magnifications parameter is not a list")
+        raise InvalidParameterError("Magnifications must be a list")
     
     # Validate each magnification in the list
     for mag in magnifications:
         if not isinstance(mag, (int, float)):
-            raise ValueError("Each magnification must be a number")
+            logger.error(f"Each magnification must be a number: {mag}")
+            raise InvalidParameterError("Each magnification must be a number")
         if mag <= 0:
-            raise ValueError("Each magnification must be positive")
+            logger.error(f"Each magnification must be positive: {mag}")
+            raise InvalidParameterError("Each magnification must be positive")
     
     best_contrast = -999
     best_x = 0

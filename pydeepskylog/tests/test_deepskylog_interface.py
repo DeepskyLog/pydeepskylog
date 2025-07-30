@@ -1,6 +1,8 @@
 import unittest
 from unittest.mock import patch, Mock
 import pydeepskylog.deepskylog_interface as dsl
+from pydeepskylog.exceptions import APIAuthenticationError, APITimeoutError, APIResponseError, APIConnectionError
+
 
 class TestDeepskylogInterface(unittest.TestCase):
     def setUp(self):
@@ -30,25 +32,25 @@ class TestDeepskylogInterface(unittest.TestCase):
     @patch('pydeepskylog.deepskylog_interface.requests.get')
     def test_api_authentication_error(self, mock_get):
         mock_get.return_value = Mock(status_code=401, raise_for_status=Mock())
-        with self.assertRaises(PermissionError):
+        with self.assertRaises(APIAuthenticationError):
             dsl.dsl_instruments('user')
 
     @patch('pydeepskylog.deepskylog_interface.requests.get')
     def test_api_connection_error(self, mock_get):
         mock_get.side_effect = dsl.requests.exceptions.ConnectionError
-        with self.assertRaises(ConnectionError):
+        with self.assertRaises(APIConnectionError):
             dsl.dsl_instruments('user')
 
     @patch('pydeepskylog.deepskylog_interface.requests.get')
     def test_api_timeout(self, mock_get):
         mock_get.side_effect = dsl.requests.exceptions.Timeout
-        with self.assertRaises(ConnectionError):
+        with self.assertRaises(APITimeoutError):
             dsl.dsl_instruments('user')
 
     @patch('pydeepskylog.deepskylog_interface.requests.get')
     def test_api_malformed_json(self, mock_get):
         mock_get.return_value = Mock(status_code=200, json=Mock(side_effect=ValueError))
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(APIResponseError):
             dsl.dsl_instruments('user')
 
     def test_calculate_magnifications(self):
