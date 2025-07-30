@@ -18,6 +18,10 @@ This guide provides practical examples for common use cases with the pydeepskylo
   - [Contrast Reserve](#contrast-reserve)
   - [Optimal Detection Magnification](#optimal-detection-magnification)
   - [Magnitudes](#magnitudes)
+- [Contributing](#contributing)
+- [License](#license)
+- [Changelog](#changelog)
+- [Acknowledgements](#acknowledgements)
 
 ---
 
@@ -36,6 +40,12 @@ Install via pip:
 
 ```bash
 pip install pydeepskylog
+```
+
+Development dependencies can be installed with:
+
+```bash
+pip install -e .[dev]
 ```
 
 ## Basic Usage
@@ -188,6 +198,10 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to contribute.
 ## License
 
 [GPL-3.0](LICENSE)
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for a detailed list of changes and updates to the package.
 
 ## Acknowledgements
 
