@@ -13,83 +13,149 @@ _DSL_API_CACHE_TTL: int = 300  # seconds (5 minutes)
 
 def dsl_instruments(username: str) -> Dict[str, Any]:
     """
-    Get all defined instruments of a DeepskyLog user.
+    Retrieve all defined astronomical instruments for a DeepskyLog user via the DeepskyLog API.
 
-    This function retrieves the instruments defined by a specific user in the DeepskyLog system.
+    This function queries the DeepskyLog API for the specified user and returns a dictionary
+    containing all telescopes and observing instruments registered in their account. The data
+    typically includes specifications such as instrument type, diameter, focal length, and other
+    relevant properties.
 
     Args:
-        username (str): The username of the DeepskyLog user.
+        username (str): The DeepskyLog username whose instruments are to be retrieved.
 
     Returns:
-        dict: A dictionary containing the instruments' specifications, in JSON format.
+        Dict[str, Any]: A dictionary mapping instrument IDs to their specification dictionaries,
+        as returned by the DeepskyLog API.
+
+    Raises:
+        APIConnectionError: If the API server cannot be reached.
+        APITimeoutError: If the API request times out.
+        APIAuthenticationError: If authentication fails for the user.
+        APIResponseError: If the API response is invalid or malformed.
+        InvalidParameterError: If the username is invalid.
+
+    Example:
+        >>> instruments = dsl_instruments("astro_user")
+        >>> for inst_id, inst in instruments.items():
+        ...     print(inst["name"], inst["diameter"])
     """
     return _dsl_api_call("instrument", username)
 
 def dsl_eyepieces(username: str) -> Dict[str, Any]:
     """
-    Get all defined eyepieces of a DeepskyLog user.
+    Retrieve all defined eyepieces for a DeepskyLog user via the DeepskyLog API.
 
-    This function retrieves the eyepieces defined by a specific user in the DeepskyLog system.
+    This function queries the DeepskyLog API for the specified user and returns a dictionary
+    containing all eyepieces registered in their account. The data typically includes specifications
+    such as focal length, apparent field of view, and whether the eyepiece is active.
 
     Args:
-        username (str): The username of the DeepskyLog user.
+        username (str): The DeepskyLog username whose eyepieces are to be retrieved.
 
     Returns:
-        dict: A dictionary containing the eyepieces' specifications, in JSON format.
+        Dict[str, Any]: A dictionary mapping eyepiece IDs to their specification dictionaries,
+        as returned by the DeepskyLog API.
+
+    Raises:
+        APIConnectionError: If the API server cannot be reached.
+        APITimeoutError: If the API request times out.
+        APIAuthenticationError: If authentication fails for the user.
+        APIResponseError: If the API response is invalid or malformed.
+        InvalidParameterError: If the username is invalid.
+
+    Example:
+        >>> eyepieces = dsl_eyepieces("astro_user")
+        >>> for ep_id, ep in eyepieces.items():
+        ...     print(ep["name"], ep["focal_length_mm"])
     """
     return _dsl_api_call("eyepieces", username)
 
 def dsl_lenses(username: str) -> Dict[str, Any]:
     """
-    Get all defined lenses of a DeepskyLog user.
+    Retrieve all defined lenses for a DeepskyLog user via the DeepskyLog API.
 
-    This function retrieves the lenses defined by a specific user in the DeepskyLog system.
+    This function queries the DeepskyLog API for the specified user and returns a dictionary
+    containing all lenses registered in their account. The data typically includes specifications
+    such as lens type, focal length, and other relevant properties.
 
     Args:
-        username (str): The username of the DeepskyLog user.
+        username (str): The DeepskyLog username whose lenses are to be retrieved.
 
     Returns:
-        dict: A dictionary containing the lenses' specifications, in JSON format.
+        Dict[str, Any]: A dictionary mapping lens IDs to their specification dictionaries,
+        as returned by the DeepskyLog API.
+
+    Raises:
+        APIConnectionError: If the API server cannot be reached.
+        APITimeoutError: If the API request times out.
+        APIAuthenticationError: If authentication fails for the user.
+        APIResponseError: If the API response is invalid or malformed.
+        InvalidParameterError: If the username is invalid.
+
+    Example:
+        >>> lenses = dsl_lenses("astro_user")
+        >>> for lens_id, lens in lenses.items():
+        ...     print(lens["name"], lens["focal_length_mm"])
     """
     return _dsl_api_call("lenses", username)
 
 def dsl_filters(username: str) -> Dict[str, Any]:
     """
-    Get all defined filters of a DeepskyLog user.
+    Retrieve all defined filters for a DeepskyLog user via the DeepskyLog API.
 
-    This function retrieves the filters defined by a specific user in the DeepskyLog system.
+    This function queries the DeepskyLog API for the specified user and returns a dictionary
+    containing all filters registered in their account. The data typically includes specifications
+    such as filter type, bandpass, and other relevant properties.
 
     Args:
-        username (str): The username of the DeepskyLog user.
+        username (str): The DeepskyLog username whose filters are to be retrieved.
 
     Returns:
-        dict: A dictionary containing the filters' specifications, in JSON format.
+        Dict[str, Any]: A dictionary mapping filter IDs to their specification dictionaries,
+        as returned by the DeepskyLog API.
+
+    Raises:
+        APIConnectionError: If the API server cannot be reached.
+        APITimeoutError: If the API request times out.
+        APIAuthenticationError: If authentication fails for the user.
+        APIResponseError: If the API response is invalid or malformed.
+        InvalidParameterError: If the username is invalid.
+
+    Example:
+        >>> filters = dsl_filters("astro_user")
+        >>> for filter_id, flt in filters.items():
+        ...     print(flt["name"], flt["type"])
     """
     return _dsl_api_call("filters", username)
 
 
 def calculate_magnifications(instrument: Dict[str, Any], eyepieces: List[Dict[str, Any]]) -> List[float]:
     """
-    Calculate possible magnifications for a given telescope and eyepieces.
+    Compute all possible magnifications for a given telescope (instrument) and a list of eyepieces.
 
-    This function calculates the possible magnifications for a telescope
-    based on its specifications and the eyepieces provided. If the telescope
-    has a fixed magnification, it returns that value. Otherwise, it calculates
-    the magnifications for each active eyepiece.
+    This function determines the set of magnifications achievable with the provided telescope and eyepieces.
+    If the instrument specifies a fixed magnification (e.g., for binoculars), that value is returned as a single-item list.
+    Otherwise, the function calculates the magnification for each active eyepiece using the formula:
+
+        magnification = (telescope diameter) * (focal ratio) / (eyepiece focal length in mm)
+
+    Only eyepieces marked as active (`eyepieceactive` is True) are considered.
 
     Args:
-        instrument (dict): A dictionary containing the telescope's specifications.
-            Expected keys are:
-                - "fixedMagnification": The fixed magnification of the telescope.  Should be None if there is no fixed magnification.
-                - "diameter": The diameter of the telescope.
-                - "fd": The focal ratio of the telescope.
-        eyepieces (dict): A dictionary containing the eyepieces' specifications.
-            Each eyepiece is expected to have:
-                - "eyepieceactive": A boolean indicating if the eyepiece is active.
-                - "focal_length_mm": The focal length of the eyepiece.
+        instrument (Dict[str, Any]): Dictionary with telescope specifications. Expected keys:
+            - "fixedMagnification" (float or None): Fixed magnification, if applicable.
+            - "diameter" (float): Telescope diameter (typically in mm).
+            - "fd" (float): Telescope focal ratio (focal length / diameter).
+        eyepieces (List[Dict[str, Any]]): List of eyepiece dictionaries. Each should have:
+            - "eyepieceactive" (bool): Whether the eyepiece is active.
+            - "focal_length_mm" (float): Eyepiece focal length in millimeters.
 
     Returns:
-        list: A list of possible magnifications for the telescope.
+        List[float]: List of possible magnifications for the telescope and eyepieces.
+
+    Example:
+        >>> mags = calculate_magnifications(instrument, eyepieces)
+        >>> print(mags)
     """
     magnifications: List[float] = []
     # Check if the instrument has a fixed magnification
@@ -105,9 +171,23 @@ def calculate_magnifications(instrument: Dict[str, Any], eyepieces: List[Dict[st
 
 def convert_instrument_type_to_int(instrument_type: str) -> int:
     """
-    Convert an instrument type string to an integer.
-    :param instrument_type: The instrument type as a string.
-    :return: The instrument type as an integer.
+    Convert an instrument type string to its corresponding integer code.
+
+    This function maps a human-readable instrument type (e\.g\., "Refractor", "Binoculars") to an integer value
+    as defined by the DeepskyLog system\. The mapping is used for API communication and data storage consistency\.
+
+    Args:
+        instrument_type \(str\): The instrument type as a string \(e\.g\., "Refractor", "Binoculars"\)\.
+
+    Returns:
+        int: The integer code corresponding to the instrument type\.
+
+    Raises:
+        KeyError: If the instrument type string is not recognized\.
+
+    Example:
+        >>> convert_instrument_type_to_int\("Refractor"\)
+        2
     """
     instrument_types: Dict[str, int] = {
         "Naked Eye": 0,
@@ -126,9 +206,24 @@ def convert_instrument_type_to_int(instrument_type: str) -> int:
 
 def convert_instrument_type_to_string(instrument_type: int) -> str:
     """
-    Convert an instrument type string to a string.
-    :param instrument_type: The instrument type as an integer.
-    :return: The instrument type as a string.
+    Convert an instrument type integer code to its corresponding string representation.
+
+    This function maps an integer instrument type code (as used by the DeepskyLog system) to a human-readable
+    instrument type string (e\.g\., "Refractor", "Binoculars")\. This mapping is used for displaying instrument
+    types and for interpreting API data.
+
+    Args:
+        instrument_type \(int\): The instrument type code as an integer \(e\.g\., 2 for "Refractor", 1 for "Binoculars"\)\.
+
+    Returns:
+        str: The string representation of the instrument type\.
+
+    Raises:
+        KeyError: If the instrument type code is not recognized\.
+
+    Example:
+        >>> convert_instrument_type_to_string\(2\)
+        'Refractor'
     """
     instrument_types: Dict[str, int] = {
         0: "Naked Eye",
@@ -147,17 +242,30 @@ def convert_instrument_type_to_string(instrument_type: int) -> str:
 
 def _dsl_api_call(api_call: str, username: str) -> Dict[str, Any]:
     """
-    Make an API call to the DeepskyLog system.
+    Make a GET request to the DeepskyLog API for a specific resource and user.
 
-    This function constructs the API URL based on the provided API call and username,
-    sends a GET request to the DeepskyLog system, and returns the response in JSON format.
+    This function constructs the appropriate API URL for the requested resource (e\.g\., instruments, eyepieces)
+    and user, sends a GET request, and returns the parsed JSON response\. It includes in-memory caching to reduce
+    redundant API calls and handles various error conditions, raising custom exceptions for connection, timeout,
+    authentication, and response issues\.
 
     Args:
-        api_call (str): The specific API endpoint to call (e.g., "instruments", "eyepieces").
-        username (str): The username of the DeepskyLog user.
+        api_call \(str\): The resource endpoint to query \(e\.g\., "instrument", "eyepieces", "lenses", "filters"\)\.
+        username \(str\): The DeepskyLog username for which to retrieve data\.
 
     Returns:
-        dict: The response from the API call, parsed as a JSON dictionary.
+        Dict\[str, Any\]: The parsed JSON response from the API, typically a dictionary mapping IDs to resource data\.
+
+    Raises:
+        APIConnectionError: If the API server cannot be reached\.
+        APITimeoutError: If the API request times out\.
+        APIAuthenticationError: If authentication fails for the user\.
+        APIResponseError: If the API response is invalid, malformed, or missing expected data\.
+        InvalidParameterError: If the username or parameters are invalid\.
+
+    Example:
+        >>> data = _dsl_api_call\("instrument", "astro_user"\)
+        >>> print\(data\)
     """
     api_url: str = f"{DSL_API_BASE_URL}{api_call}/{username}"
     now: float = time.time()

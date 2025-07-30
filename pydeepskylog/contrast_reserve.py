@@ -135,14 +135,24 @@ def calculate_log_object_contrast(
         object_diameter1: Optional[float], object_diameter2: Optional[float]
 ) -> float:
     """
-    Calculates the log object contrast.
-    
-    :param sqm: The sky quality meter reading
-    :param surf_brightness: The surface brightness of the object in magnitudes per square arc second
-    :param magnitude: The magnitude of the object to observe
-    :param object_diameter1: The diameter along the major axis of the object in arc seconds
-    :param object_diameter2: The diameter along the minor axis of the object in arc seconds
-    :return: The log object contrast
+    Calculate the logarithmic object contrast.
+
+    The object contrast is a measure of the difference in brightness between the object
+    and the background sky. This function computes the logarithmic contrast using either
+    the surface brightness or the integrated magnitude and object dimensions.
+
+    Args:
+        sqm (float): The sky quality meter reading in magnitudes per square arcsecond.
+        surf_brightness (Optional[float]): The surface brightness of the object in magnitudes per square arcsecond.
+        magnitude (Optional[float]): The integrated magnitude of the object.
+        object_diameter1 (Optional[float]): The major axis diameter of the object in arcseconds.
+        object_diameter2 (Optional[float]): The minor axis diameter of the object in arcseconds.
+
+    Returns:
+        float: The logarithmic object contrast.
+
+    Raises:
+        InvalidParameterError: If required parameters are missing or invalid.
     """
     logger: logging = logging.getLogger(__name__)
 
@@ -162,15 +172,34 @@ def calculate_log_object_contrast(
 
 
 def calculate_threshold_contrast(sky_background_brightness: float, angular_size_arcmin: float) -> float:
-    """
-    Calculates the threshold contrast using LTC array interpolation.
-
-    :param sky_background_brightness: The sky background brightness
-    :param angular_size_arcmin: The angular size in arc minutes
-    :return: The log threshold contrast
-    """
     max_log_contrast = 37
     log_angular_size = math.log10(angular_size_arcmin)
+    """
+    Interpolate the log threshold contrast for object detection based on sky brightness and object angular size.
+
+    This function uses the Log Threshold Contrast (LTC) table and a logarithmic angular size grid to estimate
+    the minimum contrast (in log units) required for visual detection of an astronomical object, given the
+    sky background brightness and the object's angular size.
+
+    The threshold contrast is determined by bilinear interpolation in the LTC table, where:
+        - The rows correspond to integer sky background brightness values (in magnitudes per square arcsecond).
+        - The columns correspond to log10(angular size in arcminutes).
+
+    Args:
+        sky_background_brightness (float): Sky background brightness in magnitudes per square arcsecond.
+        angular_size_arcmin (float): Angular size of the object in arcminutes.
+
+    Returns:
+        float: The interpolated log threshold contrast required for detection.
+
+    Raises:
+        InvalidParameterError: If input parameters are invalid.
+
+    Mathematical context:
+        The function finds the appropriate indices in the LTC table for the given sky brightness and
+        log(angular size), then performs linear interpolation along both axes to estimate the threshold.
+        This value is used to compare with the object's actual contrast to assess detectability.
+    """
     angle_index = 0
 
     # Get integer part of the sky background brightness
@@ -253,24 +282,48 @@ def contrast_reserve(
         magnitude: Optional[float], object_diameter1: Optional[float], object_diameter2: Optional[float]
 ) -> float:
     """
-    Calculate the contrast reserve
-    If the contrast difference is < -0.2, the object is not visible
-        -0.2 < contrast diff < 0.1 : questionable
-        0.10 < contrast diff < 0.35 : Difficult
-        0.35 < contrast diff < 0.5 : Quite difficult to see
-        0.50 < contrast diff < 1.0 : Easy to see
-        1.00 < contrast diff : Very easy to see.
+    Calculate the contrast reserve for visual detection of an astronomical object.
 
-    :param sqm: The sky quality meter reading
-    :param telescope_diameter: The diameter of the telescope in mm
-    :param magnification: The magnification of the telescope
-    :param surf_brightness: The surface brightness of the object in magnitudes per square arc second
-    :param magnitude: The magnitude of the object to observe
-    :param object_diameter1: The diameter along the major axis of the object in arc seconds
-    :param object_diameter2: The diameter along the minor axis of the object in arc seconds
+    The contrast reserve quantifies how much the object's contrast exceeds the minimum threshold required for detection,
+    based on the observer's sky brightness, telescope, magnification, and object properties.
 
-    :return: The contrast reserve of the object
-    :raises InvalidParameterError: If parameters have invalid types or values
+    The calculation involves:
+        1. Computing the object's log contrast relative to the sky background, using either its surface brightness or
+           integrated magnitude and size.
+        2. Estimating the sky background brightness and the object's angular size at the given magnification.
+        3. Interpolating the log threshold contrast from the Log Threshold Contrast (LTC) table, which models human
+           visual detection limits as a function of sky brightness and object size.
+        4. Subtracting the threshold from the object's log contrast to yield the contrast reserve.
+
+    Interpretation of the result:
+        - If contrast reserve < -0.2: Object is not visible.
+        - -0.2 <= contrast reserve < 0.1: Questionable detection.
+        - 0.1 <= contrast reserve < 0.35: Difficult.
+        - 0.35 <= contrast reserve < 0.5: Quite difficult to see.
+        - 0.5 <= contrast reserve < 1.0: Easy to see.
+        - >= 1.0: Very easy to see.
+
+    Args:
+        sqm (float): Sky Quality Meter reading (sky brightness) in magnitudes per square arcsecond.
+        telescope_diameter (float): Diameter of the telescope in millimeters.
+        magnification (float): Magnification used.
+        surf_brightness (Optional[float]): Surface brightness of the object in magnitudes per square arcsecond.
+        magnitude (Optional[float]): Integrated magnitude of the object (required if surface brightness is not given).
+        object_diameter1 (Optional[float]): Major axis diameter of the object in arcseconds.
+        object_diameter2 (Optional[float]): Minor axis diameter of the object in arcseconds.
+
+    Returns:
+        float: The contrast reserve (difference between object and threshold log contrast).
+
+    Raises:
+        InvalidParameterError: If any parameter is missing or invalid.
+
+    Mathematical context:
+        - Log object contrast is computed as:
+            logC = -0.4 * (SB + 8.89 - SQM)
+          or, if surface brightness is not given, SB is derived from magnitude and size.
+        - Threshold contrast is interpolated from the LTC table using sky brightness and log10(angular size).
+        - Contrast reserve = log object contrast - log threshold contrast.
     """
     # Log a string using python logger
     logger: logging = logging.getLogger(__name__)
@@ -315,17 +368,37 @@ def optimal_detection_magnification(
         magnitude: Optional[float], object_diameter1: Optional[float], object_diameter2: Optional[float],
         magnifications: List[float]) -> float:
     """
-    Calculate the best magnification to use for the object to detect it
+    Determine the optimal magnification for visually detecting an astronomical object.
 
-    :param sqm: The sky quality meter reading
-    :param telescope_diameter: The diameter of the telescope in mm
-    :param surf_brightness: The surface brightness of the object in magnitudes per square arc second
-    :param magnitude: The magnitude of the object to observe
-    :param object_diameter1: The diameter along the major axis of the object in arc seconds
-    :param object_diameter2: The diameter along the minor axis of the object in arc seconds
-    :param magnifications: The list of magnifications available for the telescope
-    :return: The best magnification to use for the object
-    :raises ValueError: If parameters have invalid types or values
+    This function evaluates a list of possible magnifications and selects the one that maximizes the contrast reserve,
+    i.e., the difference between the object's contrast and the minimum threshold required for detection. The calculation
+    considers the observer's sky brightness (SQM), telescope diameter, object properties, and available magnifications.
+
+    The process involves:
+        1. For each magnification, compute the contrast reserve using the object's surface brightness or integrated
+           magnitude and size, the telescope's parameters, and the sky background.
+        2. The contrast reserve is calculated as the difference between the object's log contrast and the threshold
+           contrast interpolated from the Log Threshold Contrast (LTC) table.
+        3. The magnification yielding the highest contrast reserve is returned as optimal for detection.
+
+    Args:
+        sqm (float): Sky Quality Meter reading (sky brightness) in magnitudes per square arcsecond.
+        telescope_diameter (float): Diameter of the telescope in millimeters.
+        surf_brightness (Optional[float]): Surface brightness of the object in magnitudes per square arcsecond.
+        magnitude (Optional[float]): Integrated magnitude of the object (required if surface brightness is not given).
+        object_diameter1 (Optional[float]): Major axis diameter of the object in arcseconds.
+        object_diameter2 (Optional[float]): Minor axis diameter of the object in arcseconds.
+        magnifications (List[float]): List of available magnifications to evaluate.
+
+    Returns:
+        float: The magnification that provides the highest contrast reserve (i.e., optimal for detection).
+
+    Raises:
+        InvalidParameterError: If any parameter is missing or invalid.
+
+    Mathematical context:
+        - For each magnification, the function computes the contrast reserve using the `contrast_reserve` function.
+        - The optimal magnification is the one that maximizes this value, improving the likelihood of visual detection.
     """
     # Validate required numeric inputs
     logger: logging = logging.getLogger(__name__)
