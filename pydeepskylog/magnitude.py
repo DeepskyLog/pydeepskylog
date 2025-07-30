@@ -19,7 +19,7 @@ def nelm_to_sqm(nelm: float, fst_offset:float=0.0) -> float:
         raise ValueError("NELM must be a number")
     if not isinstance(fst_offset, (int, float)):
         raise ValueError("fst_offset must be a number")
-    if nelm < 0 or nelm > 6.7:
+    if nelm + fst_offset < 0 or nelm + fst_offset > 6.7:
         raise ValueError("NELM must be between 0 and 6.7")
     try:
         exponent = 1.586 - (nelm + fst_offset) / 5.0
