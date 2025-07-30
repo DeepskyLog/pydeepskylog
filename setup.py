@@ -49,12 +49,16 @@ setup(
     url="https://github.com/DeepskyLog/pydeepskylog",
     author="Wim De Meester",
     author_email="deepskywim@gmail.com",
+    license="GNU General Public License v3 (GPLv3)",
     install_requires=[
         "requests",
     ],
+    python_requires=">=3.9",
     extras_require={
         "dev": [
-            "",
+            "sphinx",
+            "sphinx-rtd-theme",
+            "sphinx-autodoc-typehints",
         ],
     },
 )
