@@ -179,22 +179,22 @@ class TestContrastReserve(unittest.TestCase):
         # Test non-numeric surf_brightness
         with self.assertRaises(InvalidParameterError) as context:
             pds.contrast_reserve(sqm, diameter, 66, "invalid", 9.2, 540, 138)
-        self.assertEqual(str(context.exception), "Surface brightness must be a number or None")
+        self.assertEqual(str(context.exception), "Surface brightness must be a number")
         
         # Test non-numeric magnitude when surf_brightness is None
         with self.assertRaises(InvalidParameterError) as context:
             pds.contrast_reserve(sqm, diameter, 66, None, "invalid", 540, 138)
-        self.assertEqual(str(context.exception), "Magnitude must be a number or None")
+        self.assertEqual(str(context.exception), "Magnitude must be a number")
         
         # Test non-numeric object_diameter1
         with self.assertRaises(InvalidParameterError) as context:
             pds.contrast_reserve(sqm, diameter, 66, None, 9.2, "invalid", 138)
-        self.assertEqual(str(context.exception), "Object diameter 1 must be a number or None")
+        self.assertEqual(str(context.exception), "Object diameter 1 must be a number")
         
         # Test non-numeric object_diameter2
         with self.assertRaises(InvalidParameterError) as context:
             pds.contrast_reserve(sqm, diameter, 66, None, 9.2, 540, "invalid")
-        self.assertEqual(str(context.exception), "Object diameter 2 must be a number or None")
+        self.assertEqual(str(context.exception), "Object diameter 2 must be a number")
         
         # Test non-positive object_diameter1
         with self.assertRaises(InvalidParameterError) as context:
@@ -297,22 +297,22 @@ class TestContrastReserve(unittest.TestCase):
         # Test non-numeric surf_brightness
         with self.assertRaises(InvalidParameterError) as context:
             pds.optimal_detection_magnification(sqm, diameter, "invalid", 11, 600, 600, available_magnifications)
-        self.assertEqual(str(context.exception), "Surface brightness must be a number or None")
+        self.assertEqual(str(context.exception), "Surface brightness must be a number")
         
         # Test non-numeric magnitude when surf_brightness is None
         with self.assertRaises(InvalidParameterError) as context:
             pds.optimal_detection_magnification(sqm, diameter, None, "invalid", 600, 600, available_magnifications)
-        self.assertEqual(str(context.exception), "Magnitude must be a number or None")
+        self.assertEqual(str(context.exception), "Magnitude must be a number")
         
         # Test non-numeric object_diameter1
         with self.assertRaises(InvalidParameterError) as context:
             pds.optimal_detection_magnification(sqm, diameter, None, 11, "invalid", 600, available_magnifications)
-        self.assertEqual(str(context.exception), "Object diameter 1 must be a number or None")
+        self.assertEqual(str(context.exception), "Object diameter 1 must be a number")
         
         # Test non-numeric object_diameter2
         with self.assertRaises(InvalidParameterError) as context:
             pds.optimal_detection_magnification(sqm, diameter, None, 11, 600, "invalid", available_magnifications)
-        self.assertEqual(str(context.exception), "Object diameter 2 must be a number or None")
+        self.assertEqual(str(context.exception), "Object diameter 2 must be a number")
         
         # Test non-positive object_diameter1
         with self.assertRaises(InvalidParameterError) as context:

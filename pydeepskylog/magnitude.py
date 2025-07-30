@@ -1,6 +1,7 @@
 import math
 import logging
 from pydeepskylog.exceptions import InvalidParameterError
+from pydeepskylog.validation import validate_in_range, validate_number
 
 logger: logging = logging.getLogger(__name__)
 
@@ -19,15 +20,10 @@ def nelm_to_sqm(nelm: float, fst_offset:float=0.0) -> float:
 
     :return: The SQM value
     """
-    if not isinstance(nelm, (int, float)):
-        logger.error("nelm must be an int or float")
-        raise InvalidParameterError("NELM must be a number")
-    if not isinstance(fst_offset, (int, float)):
-        logger.error("fst_offset must be an int or float")
-        raise InvalidParameterError("fst_offset must be a number")
-    if nelm + fst_offset < 0 or nelm + fst_offset > 6.7:
-        logger.error("NELM must be between 0 and 6.7")
-        raise InvalidParameterError("NELM must be between 0 and 6.7")
+    validate_number(fst_offset, "fst_offset", allow_none=False)
+    validate_number(nelm, "nelm", allow_none=False)
+    validate_in_range(nelm + fst_offset, "NELM + fst_offset", 0, 6.7)
+
     try:
         exponent = 1.586 - (nelm + fst_offset) / 5.0
         base = math.pow(10, exponent) - 1.0
@@ -51,13 +47,8 @@ def nelm_to_bortle(nelm: float) -> int:
     :param nelm: The Naked Eye Limiting Magnitude
     :return: The Bortle scale value (1 - 9)
     """
-    if not isinstance(nelm, (int, float)):
-        logger.error("NELM must be an int or float")
-        raise InvalidParameterError("NELM must be a number")
+    validate_in_range(nelm, "NELM", 0, 6.7)
 
-    if nelm < 0 or nelm > 6.7:
-        logger.error("NELM must be between 0 and 6.7")
-        raise InvalidParameterError("NELM must be between 0 and 6.7")
     if nelm < 3.6:
         return 9
     elif nelm < 3.9:
@@ -87,12 +78,8 @@ def sqm_to_bortle(sqm: float) -> int:
     :param sqm: The Sky Quality Meter value
     :return: The Bortle scale value (1 - 9)
     """
-    if not isinstance(sqm, (int, float)):
-        logger.error("SQM must be an int or float")
-        raise InvalidParameterError("SQM must be a number")
-    if sqm < 0 or sqm > 22:
-        logger.error("SQM must be between 0 and 22")
-        raise InvalidParameterError("SQM must be between 0 and 22")
+    validate_in_range(sqm, "SQM", 0, 22)
+
     if sqm <= 17.5:
         return 9
     elif sqm <= 18.0:
@@ -125,15 +112,9 @@ def sqm_to_nelm(sqm: float, fst_offset: float=0.0) -> float:
     :param fst_offset: The offset between the real Nelm and the Nelm for the observer
     :return: The Naked Eye Limiting Magnitude
     """
-    if not isinstance(sqm, (int, float)):
-        logger.error("SQM must be an int or float")
-        raise InvalidParameterError("SQM must be a number")
-    if not isinstance(fst_offset, (int, float)):
-        logger.error("fst_offset must be an int or float")
-        raise InvalidParameterError("fst_offset must be a number")
-    if sqm < 0 or sqm > 22:
-        logger.error("SQM must be between 0 and 22")
-        raise InvalidParameterError("SQM must be between 0 and 22")
+    validate_in_range(sqm, "SQM", 0, 22)
+    validate_number(fst_offset, "fst_offset", allow_none=False)
+
     try:
         base = 1 + math.pow(10, 4.316 - sqm / 5.0)
         if base <= 0:
@@ -157,15 +138,9 @@ def bortle_to_nelm(bortle: int, fst_offset: float=0.0) -> float:
     :param fst_offset: The offset between the real Nelm and the Nelm for the observer
     :return: The NELM value
     """
-    if not isinstance(bortle, int):
-        logger.error("bortle must be an int or float")
-        raise InvalidParameterError("Bortle must be an integer")
-    if not 1 <= bortle <= 9:
-        logger.error("bortle must be between 1 and 9")
-        raise InvalidParameterError("Bortle must be between 1 and 9")
-    if not isinstance(fst_offset, (int, float)):
-        logger.error("fst_offset must be an int or float")
-        raise InvalidParameterError("fst_offset must be a number")
+    validate_in_range(bortle, "Bortle", 1, 9)
+    validate_number(fst_offset, "fst_offset", allow_none=False)
+
     # Lookup dictionary mapping Bortle scale to NELM values
     bortle_nelm_map = {
         1: 6.6,
@@ -191,12 +166,8 @@ def bortle_to_sqm(bortle: int) -> float:
     :param bortle: The bortle scale
     :return: The SQM value
     """
-    if not isinstance(bortle, int):
-        logger.error("bortle must be an int or float")
-        raise InvalidParameterError("Bortle must be an integer")
-    if not 1 <= bortle <= 9:
-        logger.error("bortle must be between 1 and 9")
-        raise InvalidParameterError("Bortle must be between 1 and 9")
+    validate_in_range(bortle, "bortle", 1, 9)
+
     # Lookup dictionary mapping Bortle scale to SQM values
     bortle_sqm_map = {
         1: 21.85,
