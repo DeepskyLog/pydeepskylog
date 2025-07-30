@@ -172,15 +172,27 @@ Conversion methods are provided to convert magnitudes to SQM value and bortle sc
 
 Different formulae are available to convert magnitudes to SQM value.  The formula used here converts a sqm value of 22.0 to a naked eye limiting magnitude of 6.6.  The faintest star offset can be given to the formula.  If taking a value of -1.4 for the faintest star offset, the formula converts a sqm value of 22.0 to a naked eye limiting magnitude of 8.0.
 
+flowchart TD
+    NELM["Naked Eye Limiting Magnitude (NELM)"]
+    SQM["Sky Quality Meter (SQM)"]
+    Bortle["Bortle Scale"]
+
+    NELM -- "nelm_to_sqm()" --> SQM
+    SQM -- "sqm_to_nelm()" --> NELM
+    NELM -- "nelm_to_bortle()" --> Bortle
+    SQM -- "sqm_to_bortle()" --> Bortle
+    Bortle -- "bortle_to_nelm()" --> NELM
+    Bortle -- "bortle_to_sqm()" --> SQM
+
+
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
-
-Please make sure to update tests as appropriate.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to contribute.
 
 ## License
 
-[GPL-3.0](https://choosealicense.com/licenses/gpl-3.0/)
+[GPL-3.0](LICENSE)
 
 ## Acknowledgements
 
