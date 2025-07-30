@@ -1,5 +1,6 @@
 import logging
 import math
+from typing import Optional, Tuple, List
 from pydeepskylog.config import ContrastReserveConfig
 
 
@@ -31,8 +32,8 @@ def surface_brightness(magnitude: float, object_diameter1: float, object_diamete
 
 def validate_contrast_reserve_inputs(
         sqm: float, telescope_diameter: float, magnification: float, 
-        surf_brightness: float, magnitude: float,
-        object_diameter1: float, object_diameter2: float
+        surf_brightness: Optional[float], magnitude: Optional[float],
+        object_diameter1: Optional[float], object_diameter2: Optional[float]
 ) -> None:
     """
     Validates the inputs for the contrast_reserve function.
@@ -85,7 +86,7 @@ def validate_contrast_reserve_inputs(
 def calculate_initial_parameters(
         sqm: float, telescope_diameter: float, 
         object_diameter1: float, object_diameter2: float
-) -> tuple:
+) -> Tuple[float, float, float, float]:
     """
     Calculates initial parameters needed for contrast reserve calculation.
     
@@ -119,8 +120,8 @@ def calculate_initial_parameters(
 
 
 def calculate_log_object_contrast(
-        sqm: float, surf_brightness: float, magnitude: float,
-        object_diameter1: float, object_diameter2: float
+        sqm: float, surf_brightness: Optional[float], magnitude: Optional[float],
+        object_diameter1: Optional[float], object_diameter2: Optional[float]
 ) -> float:
     """
     Calculates the log object contrast.
@@ -237,8 +238,8 @@ def calculate_threshold_contrast(sky_background_brightness: float, angular_size_
 
 
 def contrast_reserve(
-        sqm: float, telescope_diameter: float, magnification: float, surf_brightness: float, magnitude: float,
-        object_diameter1: float, object_diameter2: float
+        sqm: float, telescope_diameter: float, magnification: float, surf_brightness: Optional[float],
+        magnitude: Optional[float], object_diameter1: Optional[float], object_diameter2: Optional[float]
 ) -> float:
     """
     Calculate the contrast reserve
@@ -300,8 +301,9 @@ def contrast_reserve(
 
 
 def optimal_detection_magnification(
-        sqm: float, telescope_diameter: float, surf_brightness: float, magnitude: float, object_diameter1: float, object_diameter2: float,
-        magnifications: list) -> float:
+        sqm: float, telescope_diameter: float, surf_brightness: Optional[float],
+        magnitude: Optional[float], object_diameter1: Optional[float], object_diameter2: Optional[float],
+        magnifications: List[float]) -> float:
     """
     Calculate the best magnification to use for the object to detect it
 

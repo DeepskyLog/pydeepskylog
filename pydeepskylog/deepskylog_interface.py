@@ -1,13 +1,14 @@
 import requests
 import time
+from typing import Dict, List, Any, Optional
 
-DSL_API_BASE_URL = "https://test.deepskylog.org/api/"  # Change this as needed
+DSL_API_BASE_URL: str = "https://test.deepskylog.org/api/"  # Change this as needed
 
 # Simple in-memory cache: {url: (timestamp, data)}
-_DSL_API_CACHE = {}
-_DSL_API_CACHE_TTL = 300  # seconds (5 minutes)
+_DSL_API_CACHE: Dict[str, tuple[float, Any]] = {}
+_DSL_API_CACHE_TTL: int = 300  # seconds (5 minutes)
 
-def dsl_instruments(username: str) -> dict:
+def dsl_instruments(username: str) -> Dict[str, Any]:
     """
     Get all defined instruments of a DeepskyLog user.
 
@@ -21,7 +22,7 @@ def dsl_instruments(username: str) -> dict:
     """
     return _dsl_api_call("instrument", username)
 
-def dsl_eyepieces(username: str) -> dict:
+def dsl_eyepieces(username: str) -> Dict[str, Any]:
     """
     Get all defined eyepieces of a DeepskyLog user.
 
@@ -35,7 +36,7 @@ def dsl_eyepieces(username: str) -> dict:
     """
     return _dsl_api_call("eyepieces", username)
 
-def dsl_lenses(username: str) -> dict:
+def dsl_lenses(username: str) -> Dict[str, Any]:
     """
     Get all defined lenses of a DeepskyLog user.
 
@@ -49,7 +50,7 @@ def dsl_lenses(username: str) -> dict:
     """
     return _dsl_api_call("lenses", username)
 
-def dsl_filters(username: str) -> dict:
+def dsl_filters(username: str) -> Dict[str, Any]:
     """
     Get all defined filters of a DeepskyLog user.
 
@@ -64,7 +65,7 @@ def dsl_filters(username: str) -> dict:
     return _dsl_api_call("filters", username)
 
 
-def calculate_magnifications(instrument: dict, eyepieces: dict) -> list:
+def calculate_magnifications(instrument: Dict[str, Any], eyepieces: List[Dict[str, Any]]) -> List[float]:
     """
     Calculate possible magnifications for a given telescope and eyepieces.
 
@@ -87,7 +88,7 @@ def calculate_magnifications(instrument: dict, eyepieces: dict) -> list:
     Returns:
         list: A list of possible magnifications for the telescope.
     """
-    magnifications = []
+    magnifications: List[float] = []
     # Check if the instrument has a fixed magnification
     if instrument["fixedMagnification"]:
         magnifications.append(instrument["fixedMagnification"])
@@ -105,7 +106,7 @@ def convert_instrument_type_to_int(instrument_type: str) -> int:
     :param instrument_type: The instrument type as a string.
     :return: The instrument type as an integer.
     """
-    instrument_types = {
+    instrument_types: Dict[str, int] = {
         "Naked Eye": 0,
         "Binoculars": 1,
         "Refractor": 2,
@@ -126,7 +127,7 @@ def convert_instrument_type_to_string(instrument_type: int) -> str:
     :param instrument_type: The instrument type as an integer.
     :return: The instrument type as a string.
     """
-    instrument_types = {
+    instrument_types: Dict[str, int] = {
         0: "Naked Eye",
         1: "Binoculars",
         2: "Refractor",
@@ -141,7 +142,7 @@ def convert_instrument_type_to_string(instrument_type: int) -> str:
 
     return instrument_types[instrument_type]
 
-def _dsl_api_call(api_call: str, username: str) -> dict:
+def _dsl_api_call(api_call: str, username: str) -> Dict[str, Any]:
     """
     Make an API call to the DeepskyLog system.
 
@@ -155,8 +156,8 @@ def _dsl_api_call(api_call: str, username: str) -> dict:
     Returns:
         dict: The response from the API call, parsed as a JSON dictionary.
     """
-    api_url = f"{DSL_API_BASE_URL}{api_call}/{username}"
-    now = time.time()
+    api_url: str = f"{DSL_API_BASE_URL}{api_call}/{username}"
+    now: float = time.time()
 
     # Check cache
     cache_entry = _DSL_API_CACHE.get(api_url)
