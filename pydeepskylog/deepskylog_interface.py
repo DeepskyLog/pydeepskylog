@@ -69,13 +69,13 @@ def calculate_magnifications(instrument: dict, eyepieces: dict) -> list:
     Args:
         instrument (dict): A dictionary containing the telescope's specifications.
             Expected keys are:
-                - "fixedMagnification": The fixed magnification of the telescope.  Should be 0 if there is no fixed magnification.
+                - "fixedMagnification": The fixed magnification of the telescope.  Should be None if there is no fixed magnification.
                 - "diameter": The diameter of the telescope.
-                - "fd": The focal length of the telescope.
+                - "fd": The focal ratio of the telescope.
         eyepieces (dict): A dictionary containing the eyepieces' specifications.
             Each eyepiece is expected to have:
                 - "eyepieceactive": A boolean indicating if the eyepiece is active.
-                - "focalLength": The focal length of the eyepiece.
+                - "focal_length_mm": The focal length of the eyepiece.
 
     Returns:
         list: A list of possible magnifications for the telescope.
@@ -88,7 +88,7 @@ def calculate_magnifications(instrument: dict, eyepieces: dict) -> list:
 
     for eyepiece in eyepieces:
         if eyepiece["eyepieceactive"]:
-            magnifications.append(instrument["diameter"] * instrument["fd"] / eyepiece["focalLength"])
+            magnifications.append(instrument["diameter"] * instrument["fd"] / eyepiece["focal_length_mm"])
 
     return magnifications
 
@@ -155,9 +155,34 @@ def _dsl_api_call(api_call: str, username: str) -> dict:
             raise PermissionError(f"Authentication failed for user '{username}' (status {response.status_code})")
         response.raise_for_status()
         try:
-            return response.json()
+            data = response.json()
         except ValueError:
             raise RuntimeError("Failed to decode JSON response from DeepskyLog API")
+        # Validate that the response is a dict or list
+        if not isinstance(data, (dict, list)):
+            raise RuntimeError("Unexpected JSON structure: expected dict or list")
+
+        # Example transformation: if data is a list, convert to dict with IDs as keys if possible
+        if isinstance(data, list):
+            # Try to use 'id' or 'ID' as key if present
+            if data and isinstance(data[0], dict) and ('id' in data[0] or 'ID' in data[0]):
+                key_name = 'id' if 'id' in data[0] else 'ID'
+                data = {str(item[key_name]): item for item in data if key_name in item}
+            else:
+                # Otherwise, return as-is
+                pass
+
+        # Further validation: check for required fields based on api_call
+        if api_call in ("instrument", "eyepieces", "lenses", "filters"):
+            if not data:
+                raise RuntimeError(f"No data returned for {api_call}")
+            # Optionally, check for expected keys in the first item
+            sample = next(iter(data.values()), None) if isinstance(data, dict) else data[0]
+            if not isinstance(sample, dict):
+                raise RuntimeError(f"Malformed data for {api_call}: expected dict entries")
+
+        return data
+
     except requests.exceptions.ConnectionError:
         raise ConnectionError("Failed to connect to DeepskyLog API server")
     except requests.exceptions.Timeout:
