@@ -1,5 +1,7 @@
 import requests
 
+DSL_API_BASE_URL = "https://test.deepskylog.org/api/"  # Change this as needed
+
 def dsl_instruments(username: str) -> dict:
     """
     Get all defined instruments of a DeepskyLog user.
@@ -148,7 +150,7 @@ def _dsl_api_call(api_call: str, username: str) -> dict:
     Returns:
         dict: The response from the API call, parsed as a JSON dictionary.
     """
-    api_url = "https://test.deepskylog.org/api/" + api_call + "/" + username
+    api_url = f"{DSL_API_BASE_URL}{api_call}/{username}"
     try:
         response = requests.get(api_url, timeout=10)
         if response.status_code in (401, 403):
